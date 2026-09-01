@@ -4,6 +4,7 @@ const Document = require('../models/Document');
 const Application = require('../models/Application');
 const Payment = require('../models/Payment');
 const CommunicationLog = require('../models/CommunicationLog');
+const { saveUploadedFile } = require('../utils/storage');
 
 /**
  * Read/write endpoints for the student self-service portal. Every handler
@@ -71,12 +72,13 @@ const uploadMyDocument = asyncHandler(async (req, res) => {
 
   const existing = await Document.findOne({ student: req.student._id, type }).sort({ version: -1 });
   const version = existing ? existing.version + 1 : 1;
+  const fileUrl = await saveUploadedFile(req.file);
 
   const document = await Document.create({
     student: req.student._id,
     type,
     status: 'Uploaded',
-    fileUrl: `/uploads/${req.file.filename}`,
+    fileUrl,
     originalFilename: req.file.originalname,
     version,
     uploadedAt: new Date(),

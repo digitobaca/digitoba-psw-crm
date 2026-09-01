@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const Document = require('../models/Document');
 const Student = require('../models/Student');
+const { saveUploadedFile, deleteUploadedFile } = require('../utils/storage');
 
 /** Counsellors may only touch documents belonging to their own assigned students. */
 const assertOwnsStudent = async (req, studentId) => {
@@ -71,13 +72,14 @@ const uploadDocument = asyncHandler(async (req, res) => {
 
   const existing = await Document.findOne({ student, type }).sort({ version: -1 });
   const version = existing ? existing.version + 1 : 1;
+  const fileUrl = await saveUploadedFile(req.file);
 
   const document = await Document.create({
     student,
     application: application || null,
     type,
     status: 'Uploaded',
-    fileUrl: `/uploads/${req.file.filename}`,
+    fileUrl,
     originalFilename: req.file.originalname,
     version,
     expiryDate: expiryDate || undefined,
@@ -137,6 +139,7 @@ const deleteDocument = asyncHandler(async (req, res) => {
   }
 
   await document.deleteOne();
+  await deleteUploadedFile(document.fileUrl);
   res.json({ success: true, message: 'Document deleted' });
 });
 

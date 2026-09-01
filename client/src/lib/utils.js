@@ -49,13 +49,16 @@ export function formatMultiple(value, decimals = 1) {
 }
 
 /**
- * Resolves a stored `fileUrl` (e.g. "/uploads/xyz.pdf") to an openable
- * absolute URL. Uploaded files are served from the API server's root, not
- * under `/api` and not from the Vite dev server — so this can't just be a
- * relative link.
+ * Resolves a stored `fileUrl` to an openable absolute URL. Two shapes:
+ * already-absolute (R2/S3 — `https://...`), returned as-is; or a relative
+ * `/uploads/xyz.pdf` (local-disk fallback, no storage provider configured
+ * yet), which needs the API server's own origin prefixed — those files are
+ * served from the API root, not under `/api` and not from the Vite dev
+ * server, so a bare relative link wouldn't resolve correctly.
  */
 export function resolveFileUrl(fileUrl) {
   if (!fileUrl) return '';
+  if (/^https?:\/\//i.test(fileUrl)) return fileUrl;
   const apiOrigin = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '');
   return `${apiOrigin}${fileUrl}`;
 }

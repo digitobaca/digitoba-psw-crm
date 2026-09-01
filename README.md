@@ -339,6 +339,9 @@ clean interface but no live provider yet:
 - **Payments** (`models/Payment.js`, `controllers/paymentController.js`) —
   records are staff-created/updated manually; `gatewayProvider`/`gatewayRef`
   fields are ready for a Razorpay/Stripe webhook handler to populate.
+- **Document storage** (`server/utils/storage.js`) — real, not stubbed, once
+  `R2_*` is set (see `.env.example`); falls back to local disk otherwise
+  (`server/uploads/`, local dev only — doesn't survive a deploy).
 - **Meta/Google Ads API** (§7's Ads Dashboard) — spend, impressions, and
   clicks are entered by hand per campaign today; everything past that
   (leads through ROAS) is already live/real, computed from actual CRM
@@ -359,9 +362,10 @@ clean interface but no live provider yet:
 - Passwords (staff `User.password`, student `Student.portalPassword`) are
   bcrypt-hashed (cost factor 12) and `select: false` by default.
 - Document uploads are restricted by MIME type and a 10MB size cap
-  (`middleware/upload.js`); local-disk storage is a deliberate Phase 1 choice
-  — swap for an S3/Cloud Storage multer adapter later without touching any
-  consumer code (`document.fileUrl` stays a URL either way).
+  (`middleware/upload.js`), parsed into memory and handed to
+  `utils/storage.js`, which uploads to Cloudflare R2 when configured or
+  falls back to local disk in dev — every consumer just reads/stores
+  `document.fileUrl`, a URL either way, so nothing else needed to change.
 - Counsellor data scoping (`scopeToCounsellor`) is enforced server-side on
   every query, not just hidden in the UI.
 
@@ -379,13 +383,38 @@ clean interface but no live provider yet:
 
 ## 12. Deployment
 
-- **Frontend**: Vercel/Netlify. Set `VITE_API_URL` at build time.
-- **Backend**: Render/Heroku/EC2. Set every variable from
-  `server/.env.example`, `NODE_ENV=production`, `CLIENT_URL` to your deployed
-  frontend origin. **Document uploads need a persistent volume or should be
-  moved to S3/Cloud Storage** — most PaaS platforms have an ephemeral
-  filesystem that wipes `server/uploads/` on every deploy.
-- **Database**: MongoDB Atlas.
+The stack this is actually deployed on: **Vercel** (frontend) +
+**Railway** (backend) + **MongoDB Atlas** (database) + **Cloudflare R2**
+(document storage), domain registered on Hostinger with its DNS pointed at
+Vercel/Railway rather than moved anywhere.
+
+- **Frontend (Vercel)**: connect the GitHub repo, set the project root to
+  `client/`, framework preset "Vite". Set `VITE_API_URL` to the backend's
+  Railway URL (e.g. `https://api.yourdomain.com/api` once the custom domain
+  is attached, or the `*.up.railway.app` URL before that). Attach the
+  Hostinger domain in Vercel's Domains tab, then add the CNAME/A records it
+  gives you in Hostinger's DNS panel.
+- **Backend (Railway)**: connect the same repo, set the service's root
+  directory to `server/`, start command `npm start`. Set every variable
+  from `server/.env.example` in Railway's Variables tab — at minimum
+  `MONGO_URI` (Atlas connection string), `JWT_SECRET`, `NODE_ENV=production`,
+  `CLIENT_URL` (the deployed Vercel origin, exactly — this drives both CORS
+  and cross-origin cookies), and the `R2_*` document-storage variables (§9).
+  Attach a subdomain (e.g. `api.yourdomain.com`) via Railway's Networking
+  tab the same way.
+- **Database (MongoDB Atlas)**: free M0 tier is enough to start. Create a
+  database user (separate from your Atlas login) and allow-list `0.0.0.0/0`
+  under Network Access (Railway's outbound IPs aren't static on the free
+  plan) — use that connection string as `MONGO_URI`.
+- **Document storage (Cloudflare R2)**: see §9 for setup steps. Required
+  before going live — Railway's filesystem doesn't persist `server/uploads/`
+  across deploys, so local-disk storage silently loses every file on the
+  next deploy if R2 isn't configured.
+- **Cookies across two domains**: `server/utils/generateToken.js` already
+  sets `secure: true` and `sameSite: 'none'` whenever `NODE_ENV=production`
+  — required for the staff/portal login cookies to work at all once the
+  frontend and backend are on different origins (Vercel vs. Railway/your
+  API subdomain). Nothing to change here, just don't remove it.
 
 ## 13. What's included vs. what's next
 
@@ -430,11 +459,12 @@ CRUD across every entity, not yet fully polished on every screen):
 - Ads Dashboard (§7): Meta/Instagram/Google/SEO campaign tracking with
   UTM-based auto-attribution — leads through ROAS computed live from real
   CRM records, not a second manually-kept spreadsheet.
+- Document storage on Cloudflare R2 (§9/§12) — survives deploys, unlike the
+  local-disk fallback it replaces.
 
 **Natural next steps**: richer array editors in the student portal profile
 (multiple education entries, full work-history) — currently scalar fields
 only; a real payment gateway; a real WhatsApp/SMS provider; a live
 Meta/Google Ads API sync so campaign spend/impressions/clicks stop being
 hand-entered; role-based UI polish pass (the CRM screens are functional,
-not yet as visually refined as the marketing site); moving document storage
-off local disk before a real deployment.
+not yet as visually refined as the marketing site).
