@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Env files
+.env
+**/.env
+!.env.example
+!**/.env.example
+
+# Build output
+client/dist/
+client/build/
+
+# Uploaded documents (local disk storage — Phase 1 only)
+server/uploads/*
+!server/uploads/.gitkeep
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor/OS
+.DS_Store
+.vscode/
+.idea/
+Thumbs.db
+
+# Local Claude Code session config
+.claude/
