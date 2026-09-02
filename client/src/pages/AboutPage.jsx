@@ -56,7 +56,7 @@ export default function AboutPage() {
               CanadaDigitoba was founded on a simple observation: too many talented, qualified people were being let
               down by unclear advice and unreliable agents. We built a consultancy that treats every client's journey
               to Canada as our own — grounded in real regulatory expertise, and focused on outcomes that actually
-              change lives.
+              change lives...
             </p>
           </div>
         </div>
