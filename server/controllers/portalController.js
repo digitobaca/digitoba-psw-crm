@@ -42,10 +42,11 @@ const updateMyProfile = asyncHandler(async (req, res) => {
 
   const student = await Student.findByIdAndUpdate(req.student._id, updates, { new: true, runValidators: true });
 
-  // Moving out of "New Lead"/"Contacted" once the student has filled in
-  // their profile is a reasonable automatic nudge along the pipeline.
-  if (['New Lead', 'Contacted', 'Qualified'].includes(student.pipelineStage)) {
-    student.pipelineStage = 'Profile Complete';
+  // Moving out of "New Lead"/early cold-attempts once the student has
+  // filled in their own profile is a reasonable automatic nudge — that kind
+  // of self-driven engagement is exactly what "Warm Lead" signals.
+  if (['New Lead', 'Cold Attempt 1', 'Cold Attempt 2', 'Cold Attempt 3'].includes(student.pipelineStage)) {
+    student.pipelineStage = 'Warm Lead';
     await student.save();
   }
 

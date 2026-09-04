@@ -146,7 +146,7 @@ export default function AdsDashboardPage() {
                 <KpiCard label="Cost / Lead" value={formatCurrency(overview.blended.cpl)} />
                 <KpiCard label="Cost / Qualified" value={formatCurrency(overview.blended.cpql)} />
                 <KpiCard label="Cost / Enrolment" value={formatCurrency(overview.blended.cac)} />
-                <KpiCard label="Applications" value={overview.totals.applications} />
+                <KpiCard label="Interested" value={overview.totals.interestedLeads} />
                 <KpiCard label="Active Campaigns" value={`${overview.activeCampaignCount} / ${overview.campaignCount}`} />
               </div>
 
@@ -158,8 +158,7 @@ export default function AdsDashboardPage() {
                   <CardContent className="space-y-3">
                     <Bar label="Leads" value={overview.funnel.leads} max={maxFunnel} />
                     <Bar label="Qualified Leads" value={overview.funnel.qualifiedLeads} max={maxFunnel} />
-                    <Bar label="Applications" value={overview.funnel.applications} max={maxFunnel} />
-                    <Bar label="Deposits" value={overview.funnel.deposits} max={maxFunnel} />
+                    <Bar label="Interested" value={overview.funnel.interestedLeads} max={maxFunnel} />
                     <Bar label="Enrolments" value={overview.funnel.enrolments} max={maxFunnel} />
                   </CardContent>
                 </Card>

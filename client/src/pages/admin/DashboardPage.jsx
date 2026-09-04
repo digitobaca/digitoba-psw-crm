@@ -10,26 +10,20 @@ import CounsellorTodayPanel from '@/components/admin/CounsellorTodayPanel.jsx';
 import { useAuth } from '@/hooks/useAuth';
 import * as api from '@/lib/api';
 
-const PENDING_REVIEW_POLL_MS = 20000;
-
 const STAGE_FILTERS = [
   'All',
   'New Lead',
-  'Contacted',
-  'Qualified',
-  'Counselling',
-  'Profile Complete',
-  'College Shortlist',
-  'Documents',
-  'Submitted for Review',
-  'Application',
-  'Offer',
-  'Deposit',
-  'Visa',
-  'Approved',
-  'Pre-Departure',
-  'Student in Canada',
-  'Closed',
+  'Cold Attempt 1',
+  'Cold Attempt 2',
+  'Cold Attempt 3',
+  'Warm Lead',
+  'Hot Lead',
+  'Interested',
+  'Enrolled',
+  'Not Interested',
+  'Counselled Not Enrolled',
+  'Hold Lead',
+  'BJO',
 ];
 
 /**
@@ -40,7 +34,6 @@ const STAGE_FILTERS = [
  */
 export default function DashboardPage() {
   const { user } = useAuth();
-  const isAdmin = user?.role === 'admin';
 
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -50,7 +43,6 @@ export default function DashboardPage() {
   const [pagination, setPagination] = useState({ totalPages: 1, total: 0 });
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [pendingReviewCount, setPendingReviewCount] = useState(0);
 
   const loadStudents = useCallback(async () => {
     setLoading(true);
@@ -61,8 +53,6 @@ export default function DashboardPage() {
       const res = await api.fetchStudents(params);
       setStudents(res.data);
       setPagination(res.pagination);
-      // Already have the exact count when viewing this filter — skip the extra request.
-      if (stage === 'Submitted for Review') setPendingReviewCount(res.pagination.total);
     } catch (err) {
       console.error('Failed to load students:', err.message);
     } finally {
@@ -73,16 +63,6 @@ export default function DashboardPage() {
   useEffect(() => {
     loadStudents();
   }, [loadStudents]);
-
-  // Admin-only "how many cases are waiting on me" badge — polled so it stays
-  // current even while parked on a different stage filter.
-  useEffect(() => {
-    if (!isAdmin) return;
-    const poll = () => api.fetchPendingReviewCount().then(setPendingReviewCount).catch(() => {});
-    poll();
-    const interval = setInterval(poll, PENDING_REVIEW_POLL_MS);
-    return () => clearInterval(interval);
-  }, [isAdmin]);
 
   // Debounce free-text search so we don't fire a request on every keystroke.
   const [searchInput, setSearchInput] = useState('');
@@ -110,25 +90,6 @@ export default function DashboardPage() {
   return (
     <>
       {user?.role === 'counsellor' && <CounsellorTodayPanel />}
-
-      {isAdmin && pendingReviewCount > 0 && stage !== 'Submitted for Review' && (
-        <button
-          type="button"
-          onClick={() => {
-            setStage('Submitted for Review');
-            setPage(1);
-          }}
-          className="mb-4 flex w-full items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-left text-sm text-indigo-900 transition-colors hover:bg-indigo-100"
-        >
-          <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-indigo-600 px-1.5 text-xs font-semibold text-white">
-            {pendingReviewCount}
-          </span>
-          <span className="font-medium">
-            {pendingReviewCount === 1 ? 'student is' : 'students are'} waiting on your review
-          </span>
-          <span className="ml-auto text-indigo-700">View →</span>
-        </button>
-      )}
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>

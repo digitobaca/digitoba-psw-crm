@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
 import * as api from '@/lib/api';
 
 const NAV = [
-  { to: '/admin', label: 'Students', end: true, roles: ['admin', 'counsellor'], badge: 'pendingReview', badge2: 'newLeads' },
+  { to: '/admin', label: 'Students', end: true, roles: ['admin', 'counsellor'], badge2: 'newLeads' },
   { to: '/admin/applications', label: 'Applications', roles: ['admin', 'counsellor'] },
   { to: '/admin/messages', label: 'Messages', roles: ['admin', 'counsellor'], badge: 'unread' },
   { to: '/admin/colleges', label: 'Colleges', roles: ['admin', 'counsellor'] },
@@ -21,7 +21,6 @@ const NAV = [
 ];
 
 const UNREAD_POLL_MS = 15000;
-const PENDING_REVIEW_POLL_MS = 20000;
 const NEW_LEADS_POLL_MS = 20000;
 
 /**
@@ -60,9 +59,7 @@ export default function AdminLayout() {
   const [logoutHover, setLogoutHover] = useState(false);
   const [shiftDialogOpen, setShiftDialogOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [pendingReviewCount, setPendingReviewCount] = useState(0);
   const [newLeadsCount, setNewLeadsCount] = useState(0);
-  const isAdmin = user?.role === 'admin';
   const visibleNav = NAV.filter((item) => item.roles.includes(user?.role));
   const roleMeta = ROLE_META[user?.role] || ROLE_META.counsellor;
 
@@ -72,16 +69,6 @@ export default function AdminLayout() {
     const interval = setInterval(poll, UNREAD_POLL_MS);
     return () => clearInterval(interval);
   }, []);
-
-  // Admin-only — a counsellor doesn't need to be told how many cases are
-  // waiting on *admin* review.
-  useEffect(() => {
-    if (!isAdmin) return;
-    const poll = () => api.fetchPendingReviewCount().then(setPendingReviewCount).catch(() => {});
-    poll();
-    const interval = setInterval(poll, PENDING_REVIEW_POLL_MS);
-    return () => clearInterval(interval);
-  }, [isAdmin]);
 
   // Both roles — a counsellor should hear about their own fresh leads, an
   // admin about the team's. The list itself is already scoped server-side
@@ -130,7 +117,6 @@ export default function AdminLayout() {
                 >
                   {item.label}
                   {item.badge === 'unread' && <NavBadge count={unreadCount} />}
-                  {item.badge === 'pendingReview' && isAdmin && <NavBadge count={pendingReviewCount} color="bg-indigo-600" />}
                   {item.badge2 === 'newLeads' && <NavBadge count={newLeadsCount} color="bg-amber-500" />}
                 </NavLink>
               ))}

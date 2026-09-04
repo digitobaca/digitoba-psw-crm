@@ -28,7 +28,7 @@ export default function PortalDashboardPage() {
 
   const uploadedTypes = new Set(documents.map((d) => d.type));
   const missingDocs = COMMON_DOCUMENT_TYPES.filter((t) => !uploadedTypes.has(t));
-  const isPreDeparture = ['Pre-Departure', 'Student in Canada'].includes(profile.pipelineStage);
+  const isPreDeparture = profile.pipelineStage === 'Enrolled';
 
   return (
     <div className="space-y-6">

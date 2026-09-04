@@ -11,23 +11,24 @@ const MIN_REVIEW_SPEND = 50;
 const TARGET_ROAS = 3;
 
 /**
- * Everything past ad-platform numbers (leads, qualified leads, applications,
- * deposits, enrolments, revenue) is computed live from real CRM records
+ * Everything past ad-platform numbers (leads, qualified leads, interested
+ * leads, enrolments, revenue) is computed live from real CRM records
  * attributed to this campaign — never stored, never stale, never
- * double-entered. "Qualified"/"Application"/"Deposit"/"Student in Canada"
- * are literal stage names already in Student.PIPELINE_STAGES, so "how far
- * did this campaign's leads get" falls straight out of the existing
- * pipeline instead of a second, parallel tracking system.
+ * double-entered. "Warm Lead"/"Interested"/"Enrolled" are literal stage
+ * names already in Student.PIPELINE_STAGES, so "how far did this campaign's
+ * leads get" falls straight out of the existing pipeline instead of a
+ * second, parallel tracking system. Only forward-pipeline stages count here
+ * (see Student.PIPELINE_STAGES vs TERMINAL_STAGES) — a lead marked "Not
+ * Interested"/"Hold Lead"/etc. has an index of -1 and never clears >= 0.
  */
 const computeCampaignStats = async (campaign) => {
   const stageIndex = (stage) => Student.PIPELINE_STAGES.indexOf(stage);
   const students = await Student.find({ campaign: campaign._id }).select('pipelineStage');
 
   const leads = students.length;
-  const qualifiedLeads = students.filter((s) => stageIndex(s.pipelineStage) >= stageIndex('Qualified')).length;
-  const applications = students.filter((s) => stageIndex(s.pipelineStage) >= stageIndex('Application')).length;
-  const deposits = students.filter((s) => stageIndex(s.pipelineStage) >= stageIndex('Deposit')).length;
-  const enrolments = students.filter((s) => stageIndex(s.pipelineStage) >= stageIndex('Student in Canada')).length;
+  const qualifiedLeads = students.filter((s) => stageIndex(s.pipelineStage) >= stageIndex('Warm Lead')).length;
+  const interestedLeads = students.filter((s) => stageIndex(s.pipelineStage) >= stageIndex('Interested')).length;
+  const enrolments = students.filter((s) => stageIndex(s.pipelineStage) >= stageIndex('Enrolled')).length;
 
   const studentIds = students.map((s) => s._id);
   const payments = studentIds.length
@@ -62,8 +63,7 @@ const computeCampaignStats = async (campaign) => {
   return {
     leads,
     qualifiedLeads,
-    applications,
-    deposits,
+    interestedLeads,
     enrolments,
     revenueByCurrency,
     revenueCAD,
@@ -194,13 +194,12 @@ const getOverview = asyncHandler(async (req, res) => {
       acc.clicks += campaign.clicks || 0;
       acc.leads += stats.leads;
       acc.qualifiedLeads += stats.qualifiedLeads;
-      acc.applications += stats.applications;
-      acc.deposits += stats.deposits;
+      acc.interestedLeads += stats.interestedLeads;
       acc.enrolments += stats.enrolments;
       acc.revenueCAD += stats.revenueCAD;
       return acc;
     },
-    { spend: 0, impressions: 0, clicks: 0, leads: 0, qualifiedLeads: 0, applications: 0, deposits: 0, enrolments: 0, revenueCAD: 0 }
+    { spend: 0, impressions: 0, clicks: 0, leads: 0, qualifiedLeads: 0, interestedLeads: 0, enrolments: 0, revenueCAD: 0 }
   );
 
   const blended = {
@@ -224,11 +223,11 @@ const getOverview = asyncHandler(async (req, res) => {
   }
 
   // Simple leaderboard: rank by qualified leads first (the framework's own
-  // "don't keep a campaign just because CPL looks cheap" advice), applications
-  // and ROAS as tiebreakers.
+  // "don't keep a campaign just because CPL looks cheap" advice), interested
+  // leads and ROAS as tiebreakers.
   const ranked = [...withStats].sort((a, b) => {
     if (b.stats.qualifiedLeads !== a.stats.qualifiedLeads) return b.stats.qualifiedLeads - a.stats.qualifiedLeads;
-    if (b.stats.applications !== a.stats.applications) return b.stats.applications - a.stats.applications;
+    if (b.stats.interestedLeads !== a.stats.interestedLeads) return b.stats.interestedLeads - a.stats.interestedLeads;
     return (b.stats.roas || 0) - (a.stats.roas || 0);
   });
   const topCampaigns = ranked.slice(0, 5).map(({ campaign, stats }) => ({ campaign, stats }));
@@ -247,8 +246,7 @@ const getOverview = asyncHandler(async (req, res) => {
       funnel: {
         leads: totals.leads,
         qualifiedLeads: totals.qualifiedLeads,
-        applications: totals.applications,
-        deposits: totals.deposits,
+        interestedLeads: totals.interestedLeads,
         enrolments: totals.enrolments,
       },
       topCampaigns,

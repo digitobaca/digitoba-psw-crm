@@ -7,6 +7,9 @@ const getTransporter = () => {
   if (transporter) return transporter;
 
   if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.warn(
+      '[email] SMTP not configured (SMTP_HOST/SMTP_USER/SMTP_PASS missing) — every email will be logged instead of sent. Set these in your host\'s environment variables (see server/.env.example).'
+    );
     return null; // email not configured
   }
 
@@ -16,9 +19,14 @@ const getTransporter = () => {
     secure: process.env.SMTP_SECURE === 'true',
     auth: {
       user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
+      // Gmail displays App Passwords with spaces for readability
+      // ("abcd efgh ijkl mnop") but the actual credential has none — strip
+      // them so it doesn't matter how it was copy-pasted into the env var.
+      pass: process.env.SMTP_PASS.replace(/\s+/g, ''),
     },
   });
+
+  console.log(`[email] SMTP configured — sending as ${process.env.SMTP_USER} via ${process.env.SMTP_HOST}:${process.env.SMTP_PORT || 587}`);
 
   return transporter;
 };
@@ -36,13 +44,24 @@ const sendEmail = async ({ to, subject, html, text }) => {
     return { skipped: true };
   }
 
-  const info = await t.sendMail({
-    from: process.env.EMAIL_FROM || process.env.SMTP_USER,
-    to,
-    subject,
-    text,
-    html,
-  });
+  let info;
+  try {
+    info = await t.sendMail({
+      from: process.env.EMAIL_FROM || process.env.SMTP_USER,
+      to,
+      subject,
+      text,
+      html,
+    });
+  } catch (err) {
+    // Callers only log err.message (so a slow/misconfigured mailer never
+    // blocks the request) — log the fuller picture here so it's actually
+    // diagnosable from the host's logs. EAUTH = wrong user/app-password;
+    // ETIMEDOUT/ECONNECTION = host is blocking outbound SMTP (rare, but some
+    // free-tier platforms restrict it).
+    console.error(`[email:failed] To: ${to} | Subject: ${subject} | code: ${err.code || 'n/a'} | ${err.message}`);
+    throw err;
+  }
 
   return info;
 };
