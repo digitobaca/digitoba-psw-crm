@@ -53,6 +53,12 @@ const studentCreateRules = [
   body('name').trim().notEmpty().withMessage('Name is required').isLength({ max: 100 }),
   body('email').trim().notEmpty().withMessage('Email is required').isEmail().withMessage('Invalid email address').normalizeEmail(),
   body('phone').trim().notEmpty().withMessage('Phone number is required').isLength({ max: 30 }),
+  // country/intendedProgram/immigrationStatus stay optional here even though
+  // the Consultation form now requires them client-side — this single
+  // endpoint is shared by every public lead-capture form site-wide,
+  // including the footer newsletter signup (Footer.jsx), which only ever
+  // sends name/email/phone. Server-side required-ness belongs per-form, not
+  // on this shared endpoint.
   body('country').optional({ checkFalsy: true }).trim().isLength({ max: 100 }),
   body('city').optional({ checkFalsy: true }).trim().isLength({ max: 100 }),
   body('education').optional({ checkFalsy: true }).trim().isLength({ max: 150 }),

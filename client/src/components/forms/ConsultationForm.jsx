@@ -67,8 +67,25 @@ export default function ConsultationForm({ defaults = {}, onSuccess, compact = f
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [submitted]);
 
+  // Country/Status/Program render as Radix Selects, not native <select>
+  // elements, so the browser's built-in `required` validation (which the
+  // Name/Email/Phone inputs rely on) doesn't reach them — enforce it here
+  // instead. Message stays optional (freeform "anything else"), and is
+  // skipped entirely in compact mode since it isn't even rendered there.
+  const validate = () => {
+    if (!form.country.trim()) return 'Please enter your country of residence.';
+    if (!form.immigrationStatus) return 'Please select your current status.';
+    if (!form.intendedProgram) return 'Please select an intended program.';
+    return null;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const validationError = validate();
+    if (validationError) {
+      toast({ title: 'Missing information', description: validationError, variant: 'destructive' });
+      return;
+    }
     setSubmitting(true);
     try {
       await submitLead({ ...form, leadSource: defaults.leadSource || 'consultation_form' });
@@ -140,7 +157,7 @@ export default function ConsultationForm({ defaults = {}, onSuccess, compact = f
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="country">Country of Residence</Label>
-          <Input id="country" value={form.country} onChange={update('country')} placeholder="Canada" />
+          <Input id="country" required value={form.country} onChange={update('country')} placeholder="Canada" />
         </div>
       </div>
 
@@ -148,7 +165,7 @@ export default function ConsultationForm({ defaults = {}, onSuccess, compact = f
         <div className="space-y-1.5">
           <Label htmlFor="status">Current Status</Label>
           <Select value={form.immigrationStatus} onValueChange={(v) => setForm((f) => ({ ...f, immigrationStatus: v }))}>
-            <SelectTrigger id="status">
+            <SelectTrigger id="status" aria-required="true">
               <SelectValue placeholder="Select status" />
             </SelectTrigger>
             <SelectContent>
@@ -163,7 +180,7 @@ export default function ConsultationForm({ defaults = {}, onSuccess, compact = f
         <div className="space-y-1.5">
           <Label htmlFor="program">Intended Program</Label>
           <Select value={form.intendedProgram} onValueChange={(v) => setForm((f) => ({ ...f, intendedProgram: v }))}>
-            <SelectTrigger id="program">
+            <SelectTrigger id="program" aria-required="true">
               <SelectValue placeholder="Select a pathway" />
             </SelectTrigger>
             <SelectContent>
