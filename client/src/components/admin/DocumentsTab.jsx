@@ -11,9 +11,8 @@ const STATUS_VARIANT = { Pending: 'secondary', Uploaded: 'info', Verified: 'succ
 /**
  * The other half of the student portal's document upload — a counsellor
  * (or admin) opens each file the student submitted, checks it, and marks
- * it Verified or Rejected (with a reason). This is what makes "Submit for
- * Admin Review" mean something: the admin reviewing afterward can see
- * exactly what's been checked, not just take the counsellor's word for it.
+ * it Verified or Rejected (with a reason), so document status is visible
+ * to everyone working the case, not just the counsellor who checked it.
  */
 export default function DocumentsTab({ student }) {
   const { toast } = useToast();

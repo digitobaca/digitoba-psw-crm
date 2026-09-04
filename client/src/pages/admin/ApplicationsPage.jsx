@@ -24,11 +24,9 @@ const STAGE_VARIANT = {
 
 /**
  * Every application across the CRM (scoped to a counsellor's own students
- * server-side). Per the CRM's workflow, an admin takes a case from
- * "College Selected" all the way through to admission details — a
- * counsellor's job stops at submitting the student for review (Students
- * tab), so they get a read-only list here to track progress; creating and
- * managing an application is admin-only, enforced server-side too.
+ * server-side). Creating and managing an application — "College Selected"
+ * through to admission details — is admin-only, enforced server-side too;
+ * a counsellor gets a read-only list here to track progress on their cases.
  */
 export default function ApplicationsPage() {
   const { user } = useAuth();
