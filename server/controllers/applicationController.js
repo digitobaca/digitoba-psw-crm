@@ -57,13 +57,14 @@ const createApplication = asyncHandler(async (req, res) => {
   // Keep the student's CRM-wide pipeline stage in step with the fact that an
   // Application now exists for them — only moves it forward, same rule as
   // every other automatic nudge along the pipeline (see portalController's
-  // profile-completion bump).
+  // profile-completion bump). "Interested" is the closest forward-pipeline
+  // signal to "an application now exists for this lead".
   const studentDoc = await Student.findById(student).select('pipelineStage');
   if (studentDoc) {
     const stageIndex = Student.PIPELINE_STAGES.indexOf(studentDoc.pipelineStage);
-    const applicationIndex = Student.PIPELINE_STAGES.indexOf('Application');
-    if (stageIndex !== -1 && stageIndex < applicationIndex) {
-      studentDoc.pipelineStage = 'Application';
+    const interestedIndex = Student.PIPELINE_STAGES.indexOf('Interested');
+    if (stageIndex !== -1 && stageIndex < interestedIndex) {
+      studentDoc.pipelineStage = 'Interested';
       await studentDoc.save();
     }
   }

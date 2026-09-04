@@ -51,25 +51,35 @@ const getOverview = asyncHandler(async (req, res) => {
 
   const stageMap = Object.fromEntries(stageBreakdown.map((s) => [s._id, s.count]));
   const countByStages = (stages) => stages.reduce((sum, s) => sum + (stageMap[s] || 0), 0);
+  // Cumulative "reached this stage or further" count, using PIPELINE_STAGES'
+  // forward order — same technique adCampaignController uses per-campaign.
+  const countFrom = (stage) => countByStages(Student.PIPELINE_STAGES.slice(Student.PIPELINE_STAGES.indexOf(stage)));
 
-  // Funnel counts per the spec's TOTAL LEADS / QUALIFIED / COUNSELLING / ... rows.
+  // Funnel counts through the forward lead-qualification pipeline.
   const funnel = {
     totalLeads: totalStudents,
-    qualifiedLeads: countByStages(Student.PIPELINE_STAGES.slice(Student.PIPELINE_STAGES.indexOf('Qualified'))),
-    counselling: countByStages(Student.PIPELINE_STAGES.slice(Student.PIPELINE_STAGES.indexOf('Counselling'))),
-    applications: countByStages(Student.PIPELINE_STAGES.slice(Student.PIPELINE_STAGES.indexOf('Application'))),
-    offers: countByStages(Student.PIPELINE_STAGES.slice(Student.PIPELINE_STAGES.indexOf('Offer'))),
-    deposits: countByStages(Student.PIPELINE_STAGES.slice(Student.PIPELINE_STAGES.indexOf('Deposit'))),
-    visas: countByStages(Student.PIPELINE_STAGES.slice(Student.PIPELINE_STAGES.indexOf('Visa'))),
-    enrolments: stageMap['Student in Canada'] || 0,
+    coldAttempted: countFrom('Cold Attempt 1'),
+    warmLeads: countFrom('Warm Lead'),
+    hotLeads: countFrom('Hot Lead'),
+    interested: countFrom('Interested'),
+    enrolled: stageMap['Enrolled'] || 0,
+  };
+
+  // Side/terminal outcomes — not forward progress, reported separately so
+  // they don't distort the funnel bars above.
+  const outcomes = {
+    notInterested: stageMap['Not Interested'] || 0,
+    counselledNotEnrolled: stageMap['Counselled Not Enrolled'] || 0,
+    holdLead: stageMap['Hold Lead'] || 0,
+    bjo: stageMap['BJO'] || 0,
   };
 
   // Stage-to-stage conversion percentages.
   const pct = (num, den) => (den > 0 ? Math.round((num / den) * 1000) / 10 : 0);
   const conversion = {
-    leadToApplicationPct: pct(funnel.applications, funnel.totalLeads),
-    applicationToOfferPct: pct(funnel.offers, funnel.applications),
-    offerToEnrolmentPct: pct(funnel.enrolments, funnel.offers),
+    leadToWarmPct: pct(funnel.warmLeads, funnel.totalLeads),
+    warmToInterestedPct: pct(funnel.interested, funnel.warmLeads),
+    interestedToEnrolledPct: pct(funnel.enrolled, funnel.interested),
   };
 
   const counsellorMap = Object.fromEntries(counsellors.map((c) => [String(c._id), c]));
@@ -82,6 +92,7 @@ const getOverview = asyncHandler(async (req, res) => {
     success: true,
     data: {
       funnel,
+      outcomes,
       conversion,
       leadsBySource: sourceBreakdown.map((s) => ({ source: s._id, count: s.count })),
       leadsByCountry: countryBreakdown.map((c) => ({ country: c._id, count: c.count })),

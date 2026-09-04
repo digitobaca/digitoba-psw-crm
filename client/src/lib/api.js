@@ -74,9 +74,6 @@ export const downloadAttendanceExport = async (params) => {
 
 // --- Students / CRM pipeline (staff) ---------------------------------------------------
 export const fetchStudents = (params) => api.get('/students', { params }).then((res) => res.data);
-/** Count of students handed off to admin and awaiting review — feeds the "Pending Review" filter/badge. */
-export const fetchPendingReviewCount = () =>
-  fetchStudents({ pipelineStage: 'Submitted for Review', limit: 1 }).then((res) => res.pagination.total);
 /** Count of brand-new, not-yet-actioned leads (scoped to own students for a counsellor) — feeds the "New Leads" nav badge. */
 export const fetchNewLeadsCount = () => fetchStudents({ pipelineStage: 'New Lead', limit: 1 }).then((res) => res.pagination.total);
 export const fetchStudent = (id) => api.get(`/students/${id}`).then((res) => res.data);

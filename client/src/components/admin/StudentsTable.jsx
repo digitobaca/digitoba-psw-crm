@@ -4,21 +4,17 @@ import { formatDate } from '@/lib/utils';
 
 const STAGE_VARIANT = {
   'New Lead': 'info',
-  Contacted: 'warning',
-  Qualified: 'warning',
-  Counselling: 'warning',
-  'Profile Complete': 'secondary',
-  'College Shortlist': 'secondary',
-  Documents: 'secondary',
-  'Submitted for Review': 'default',
-  Application: 'info',
-  Offer: 'success',
-  Deposit: 'success',
-  Visa: 'success',
-  Approved: 'success',
-  'Pre-Departure': 'success',
-  'Student in Canada': 'success',
-  Closed: 'secondary',
+  'Cold Attempt 1': 'warning',
+  'Cold Attempt 2': 'warning',
+  'Cold Attempt 3': 'warning',
+  'Warm Lead': 'default',
+  'Hot Lead': 'default',
+  Interested: 'success',
+  Enrolled: 'success',
+  'Not Interested': 'secondary',
+  'Counselled Not Enrolled': 'secondary',
+  'Hold Lead': 'secondary',
+  BJO: 'secondary',
 };
 
 const CONTACT_STATUS_VARIANT = { Contacted: 'success', 'Not Contacted': 'secondary', 'No Response': 'warning' };

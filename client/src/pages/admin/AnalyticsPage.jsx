@@ -4,13 +4,18 @@ import * as api from '@/lib/api';
 
 const FUNNEL_LABELS = {
   totalLeads: 'Total Leads',
-  qualifiedLeads: 'Qualified',
-  counselling: 'Counselling',
-  applications: 'Applications',
-  offers: 'Offers',
-  deposits: 'Deposits',
-  visas: 'Visas',
-  enrolments: 'Enrolments',
+  coldAttempted: 'Cold Attempted',
+  warmLeads: 'Warm Lead+',
+  hotLeads: 'Hot Lead+',
+  interested: 'Interested+',
+  enrolled: 'Enrolled',
+};
+
+const OUTCOME_LABELS = {
+  notInterested: 'Not Interested',
+  counselledNotEnrolled: 'Counselled, Not Enrolled',
+  holdLead: 'Hold Lead',
+  bjo: 'BJO',
 };
 
 /** Simple horizontal bar — no charting library needed for Phase 1. */
@@ -38,8 +43,9 @@ export default function AnalyticsPage() {
 
   if (!data) return <p className="text-sm text-muted-foreground">Loading analytics...</p>;
 
-  const { funnel, conversion, leadsBySource, leadsByCountry, revenueByCurrency, counsellorConversion } = data;
+  const { funnel, outcomes, conversion, leadsBySource, leadsByCountry, revenueByCurrency, counsellorConversion } = data;
   const maxFunnel = Math.max(...Object.values(funnel), 1);
+  const maxOutcome = Math.max(...Object.values(outcomes), 1);
   const maxSource = Math.max(...leadsBySource.map((s) => s.count), 1);
 
   return (
@@ -52,20 +58,20 @@ export default function AnalyticsPage() {
       <div className="grid sm:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-6 text-center">
-            <p className="text-3xl font-extrabold text-primary">{conversion.leadToApplicationPct}%</p>
-            <p className="text-sm text-muted-foreground mt-1">Lead → Application</p>
+            <p className="text-3xl font-extrabold text-primary">{conversion.leadToWarmPct}%</p>
+            <p className="text-sm text-muted-foreground mt-1">Lead → Warm</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6 text-center">
-            <p className="text-3xl font-extrabold text-primary">{conversion.applicationToOfferPct}%</p>
-            <p className="text-sm text-muted-foreground mt-1">Application → Offer</p>
+            <p className="text-3xl font-extrabold text-primary">{conversion.warmToInterestedPct}%</p>
+            <p className="text-sm text-muted-foreground mt-1">Warm → Interested</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6 text-center">
-            <p className="text-3xl font-extrabold text-primary">{conversion.offerToEnrolmentPct}%</p>
-            <p className="text-sm text-muted-foreground mt-1">Offer → Enrolment</p>
+            <p className="text-3xl font-extrabold text-primary">{conversion.interestedToEnrolledPct}%</p>
+            <p className="text-sm text-muted-foreground mt-1">Interested → Enrolled</p>
           </CardContent>
         </Card>
       </div>
@@ -77,6 +83,18 @@ export default function AnalyticsPage() {
         <CardContent className="space-y-3">
           {Object.entries(FUNNEL_LABELS).map(([key, label]) => (
             <Bar key={key} label={label} value={funnel[key]} max={maxFunnel} />
+          ))}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Outcomes</CardTitle>
+          <p className="text-xs text-muted-foreground">Side/terminal stages — not part of forward pipeline progress.</p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {Object.entries(OUTCOME_LABELS).map(([key, label]) => (
+            <Bar key={key} label={label} value={outcomes[key]} max={maxOutcome} />
           ))}
         </CardContent>
       </Card>

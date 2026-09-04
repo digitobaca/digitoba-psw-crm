@@ -136,34 +136,28 @@ counsellor works it, rather than separate "Lead" and "Student" collections
 kept in sync (see the comment at the top of `server/models/Student.js`).
 
 **Pipeline stages** (`Student.pipelineStage`):
-`New Lead → Contacted → Qualified → Counselling → Profile Complete →
-College Shortlist → Documents → Submitted for Review → Application → Offer
-→ Deposit → Visa → Approved → Pre-Departure → Student in Canada` (+ a
-`Closed` terminal state).
+`New Lead → Cold Attempt 1 → Cold Attempt 2 → Cold Attempt 3 → Warm Lead →
+Hot Lead → Interested → Enrolled` (`Student.PIPELINE_STAGES`, in forward
+order — used for the "how far along" index math in `analyticsController`
+and `adCampaignController`), plus four side/terminal outcomes a lead can
+land on from anywhere in that flow (`Student.TERMINAL_STAGES`): `Not
+Interested`, `Counselled Not Enrolled`, `Hold Lead`, `BJO`.
 
-**The end-to-end workflow, and where the counsellor's job hands off to
-admin**: book a consultation (public form) → auto-assigned to a counsellor
-→ counsellor contacts them (Contact Log) → student fills in their own
-profile via the portal (auto-bumps the stage to `Profile Complete`) →
-documents uploaded → counsellor clicks **"Submit for Admin Review"** →
-admin reviews, creates the `Application` (college + program) — which
-auto-advances the student to `Application` — and manages it end to end
-(stage, application number, admission details) as the college confirms.
-The admin who liaises with colleges is a regular staff account here, not a
-separate external login.
+**The end-to-end workflow**: book a consultation (public form) →
+auto-assigned to a counsellor → counsellor works the case through cold
+attempts to warm/hot (Contact Log) → student fills in their own profile via
+the portal (auto-bumps the stage to `Warm Lead` if it's still early) → once
+a college/program is chosen, an `Application` record is created from the
+Applications tab (auto-bumps the student to `Interested` if it's still
+behind that) and managed end to end (stage, application number, admission
+details) as the college confirms. The admin who liaises with colleges is a
+regular staff account here, not a separate external login.
 
-That handoff is a real permission boundary, not just a UI convention: a
-counsellor can move a case up to `Submitted for Review` — trying to set it
-further (`Application` and beyond) is rejected server-side
-(`studentController.updateStudent`), and creating/editing an `Application`
-is admin-only (`routes/applications.js`). The student-detail Select only
-ever offers a counsellor the stages they're actually allowed to set; past
-the handoff point it becomes a read-only badge with an explanation. Admins
-get a **"Pending Review"** callout on the Students page and a matching nav
-badge (`fetchPendingReviewCount`) so the next thing needing their attention
-is never buried in a stage filter dropdown — and counsellors get a
-read-only `Applications` view instead of edit controls they can't actually
-use.
+Both admin and counsellor can move a case through any stage — there's no
+handoff gate in this pipeline (that only made sense for the longer
+application-tracking pipeline this replaced). `Application` records
+(college applications/visas) stay admin-only to create/edit
+(`routes/applications.js`), independent of the student's `pipelineStage`.
 
 **Related collections** (each references `student`, not embedded, so
 counsellor/admin dashboards can query across all students efficiently):
@@ -298,7 +292,7 @@ automatically.
 | Method | Route | Access | Description |
 |---|---|---|---|
 | `POST` | `/api/students` | Public (rate-limited) | Create/capture a lead from any site form |
-| `GET/PUT` | `/api/students/:id` | Private (scoped) | CRM record read/update — counsellors can advance `pipelineStage` up to `Submitted for Review` only, 403 beyond that |
+| `GET/PUT` | `/api/students/:id` | Private (scoped) | CRM record read/update — either role can set `pipelineStage` to any value in `PIPELINE_STAGES`/`TERMINAL_STAGES` |
 | `DELETE` | `/api/students/:id` | Private (admin) | Delete a CRM record |
 | `POST` | `/api/students/:id/notes` | Private (scoped) | Append a timestamped counsellor note |
 | `POST` | `/api/students/:id/activate-portal` | Private (scoped) | Generate portal password, email the student |
@@ -423,9 +417,9 @@ CRUD across every entity, not yet fully polished on every screen):
 
 - Both verticals' public pages, including working (client-side, disclosed-
   assumptions) eligibility checker and cost calculator.
-- The full 15-stage CRM pipeline, shared by both verticals — with a real
-  counsellor→admin handoff enforced server-side at `Submitted for Review`
-  (see §4), not just a stage name.
+- The full lead-qualification CRM pipeline, shared by both verticals — 8
+  forward stages plus 4 terminal outcomes, both roles managing it freely
+  (see §4).
 - Role-based admin CRM + counsellor dashboard (same screens, server-scoped).
 - Verified college/program database with admin CRUD.
 - Applications, documents (real file upload), payments, tasks, and a full

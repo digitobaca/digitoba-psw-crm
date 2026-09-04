@@ -66,7 +66,7 @@ const studentCreateRules = [
 
 const studentUpdateRules = [
   param('id').isMongoId().withMessage('Invalid student id'),
-  body('pipelineStage').optional().isIn([...Student.PIPELINE_STAGES, Student.CLOSED_STAGE]),
+  body('pipelineStage').optional().isIn([...Student.PIPELINE_STAGES, ...Student.TERMINAL_STAGES]),
   body('leadSource').optional().isIn(Student.LEAD_SOURCES),
   body('immigrationStatus').optional({ checkFalsy: true }).isIn(Student.IMMIGRATION_STATUSES),
   body('campaign').optional({ nullable: true }).isMongoId(),
@@ -80,7 +80,7 @@ const studentUpdateRules = [
 const studentQueryRules = [
   query('page').optional().isInt({ min: 1 }).toInt(),
   query('limit').optional().isInt({ min: 1, max: 100 }).toInt(),
-  query('pipelineStage').optional().isIn([...Student.PIPELINE_STAGES, Student.CLOSED_STAGE]),
+  query('pipelineStage').optional().isIn([...Student.PIPELINE_STAGES, ...Student.TERMINAL_STAGES]),
   query('leadSource').optional().isIn(Student.LEAD_SOURCES),
 ];
 

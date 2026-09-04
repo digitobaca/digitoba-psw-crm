@@ -145,27 +145,10 @@ const updateStudent = asyncHandler(async (req, res) => {
     if (req.body[field] !== undefined) updates[field] = req.body[field];
   }
 
-  const existing = await Student.findOne({ _id: req.params.id, ...req.scopeFilter }).select('pipelineStage');
+  const existing = await Student.findOne({ _id: req.params.id, ...req.scopeFilter }).select('_id');
   if (!existing) {
     res.status(404);
     throw new Error('Student not found');
-  }
-
-  // Only gate an actual attempted change past the limit — resaving other
-  // fields (e.g. reassigning a counsellor) on an already-advanced student
-  // shouldn't trip this just because pipelineStage is echoed back unchanged.
-  const isStageChange = updates.pipelineStage && updates.pipelineStage !== existing.pipelineStage;
-  if (req.user.role === 'counsellor' && isStageChange && updates.pipelineStage !== Student.CLOSED_STAGE) {
-    const targetIndex = Student.PIPELINE_STAGES.indexOf(updates.pipelineStage);
-    const limitIndex = Student.PIPELINE_STAGES.indexOf(Student.COUNSELLOR_STAGE_LIMIT);
-    if (targetIndex > limitIndex) {
-      res.status(403);
-      throw new Error(`Counsellors can move a case up to "${Student.COUNSELLOR_STAGE_LIMIT}" — an admin takes it from there.`);
-    }
-  }
-
-  if (isStageChange && updates.pipelineStage === Student.COUNSELLOR_STAGE_LIMIT) {
-    updates.submittedForReviewAt = new Date();
   }
 
   const student = await Student.findOneAndUpdate({ _id: req.params.id, ...req.scopeFilter }, updates, {

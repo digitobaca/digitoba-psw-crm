@@ -15,38 +15,27 @@ const bcrypt = require('bcryptjs');
  * `intendedProgram` distinguish which vertical a record came from.
  */
 
+// Forward, ordered lead-qualification pipeline — both roles can move a case
+// freely through these (no counsellor→admin handoff gate; that only made
+// sense for the old, longer application-tracking pipeline this replaced).
+// A separate `Application` record (see models/Application.js) tracks the
+// actual college-application/visa process once a lead is serious.
 const PIPELINE_STAGES = [
   'New Lead',
-  'Contacted',
-  'Qualified',
-  'Counselling',
-  'Profile Complete',
-  'College Shortlist',
-  'Documents',
-  // The counsellor's last action on a case — they hand it off here, and only
-  // an admin can move it further (see the role gate in studentController.js
-  // updateStudent). This is the "counsellor → admin" step in the CRM's
-  // intended workflow: book consultation → assign counsellor → contact →
-  // student fills their profile → documents → submit for review → admin
-  // reviews and takes the case through to a completed Application.
-  'Submitted for Review',
-  'Application',
-  'Offer',
-  'Deposit',
-  'Visa',
-  'Approved',
-  'Pre-Departure',
-  'Student in Canada',
+  'Cold Attempt 1',
+  'Cold Attempt 2',
+  'Cold Attempt 3',
+  'Warm Lead',
+  'Hot Lead',
+  'Interested',
+  'Enrolled',
 ];
 
-// Closed-lost isn't part of the forward pipeline but is a valid terminal state.
-const CLOSED_STAGE = 'Closed';
-
-// A counsellor may move a case up to and including this stage; only an admin
-// can advance it further (create and manage the Application through to
-// admission). Closed (lost) is exempt — a counsellor can always mark a dead
-// lead closed.
-const COUNSELLOR_STAGE_LIMIT = 'Submitted for Review';
+// Side/terminal outcomes — not part of forward progress, so they're excluded
+// from PIPELINE_STAGES's index-based "how far along" math (see
+// adCampaignController/analyticsController's use of stageIndex/countByStages).
+// A lead can land on one of these from any point in the forward pipeline.
+const TERMINAL_STAGES = ['Not Interested', 'Counselled Not Enrolled', 'Hold Lead', 'BJO'];
 
 // Current immigration status in Canada, captured on the consultation form.
 const IMMIGRATION_STATUSES = ['Work Permit', 'Study Permit', 'PR / Citizen', 'Refugee Claimant'];
@@ -201,7 +190,7 @@ const StudentSchema = new mongoose.Schema(
     // --- CRM pipeline -----------------------------------------------------------
     pipelineStage: {
       type: String,
-      enum: [...PIPELINE_STAGES, CLOSED_STAGE],
+      enum: [...PIPELINE_STAGES, ...TERMINAL_STAGES],
       default: 'New Lead',
     },
     leadSource: {
@@ -268,8 +257,7 @@ StudentSchema.index({ leadSource: 1 });
 StudentSchema.index({ name: 'text', email: 'text', phone: 'text' });
 
 StudentSchema.statics.PIPELINE_STAGES = PIPELINE_STAGES;
-StudentSchema.statics.CLOSED_STAGE = CLOSED_STAGE;
-StudentSchema.statics.COUNSELLOR_STAGE_LIMIT = COUNSELLOR_STAGE_LIMIT;
+StudentSchema.statics.TERMINAL_STAGES = TERMINAL_STAGES;
 StudentSchema.statics.LEAD_SOURCES = LEAD_SOURCES;
 StudentSchema.statics.IMMIGRATION_STATUSES = IMMIGRATION_STATUSES;
 

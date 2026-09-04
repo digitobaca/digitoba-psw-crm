@@ -22,32 +22,16 @@ import { formatDate } from '@/lib/utils';
 import * as api from '@/lib/api';
 
 /**
- * The CRM's intended workflow: book consultation → assign counsellor →
- * contact → student fills their profile → documents → **submit for
- * review** → admin reviews and manages the Application through to
- * admission (Applications tab). A counsellor can move a case up to and
- * including "Submitted for Review"; only an admin can advance it further —
- * enforced server-side in studentController.updateStudent, mirrored here so
- * a counsellor never sees stage options they can't actually use.
+ * The lead-qualification pipeline: New Lead → Cold Attempt 1/2/3 → Warm Lead
+ * → Hot Lead → Interested → Enrolled, plus side/terminal outcomes a lead can
+ * land on from anywhere in that flow. Both roles can move a case freely
+ * through any of these — no admin handoff gate (a separate Application
+ * record, managed from the Applications tab, tracks the actual
+ * college-application/visa process once a lead is serious).
  */
-const FORWARD_STAGES = [
-  'New Lead',
-  'Contacted',
-  'Qualified',
-  'Counselling',
-  'Profile Complete',
-  'College Shortlist',
-  'Documents',
-  'Submitted for Review',
-  'Application',
-  'Offer',
-  'Deposit',
-  'Visa',
-  'Approved',
-  'Pre-Departure',
-  'Student in Canada',
-];
-const COUNSELLOR_STAGE_LIMIT = 'Submitted for Review';
+const FORWARD_STAGES = ['New Lead', 'Cold Attempt 1', 'Cold Attempt 2', 'Cold Attempt 3', 'Warm Lead', 'Hot Lead', 'Interested', 'Enrolled'];
+const TERMINAL_STAGES = ['Not Interested', 'Counselled Not Enrolled', 'Hold Lead', 'BJO'];
+const STAGE_OPTIONS = [...FORWARD_STAGES, ...TERMINAL_STAGES];
 
 /** Full student CRM record: pipeline stage, counsellor assignment, notes timeline, portal activation. */
 export default function StudentDetailModal({ student, open, onOpenChange, onUpdated, onDeleted }) {
@@ -59,7 +43,6 @@ export default function StudentDetailModal({ student, open, onOpenChange, onUpda
   const [counsellors, setCounsellors] = useState([]);
   const [newNote, setNewNote] = useState('');
   const [saving, setSaving] = useState(false);
-  const [submittingReview, setSubmittingReview] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [activating, setActivating] = useState(false);
 
@@ -81,15 +64,6 @@ export default function StudentDetailModal({ student, open, onOpenChange, onUpda
 
   if (!student) return null;
 
-  const limitIndex = FORWARD_STAGES.indexOf(COUNSELLOR_STAGE_LIMIT);
-  const currentIndex = FORWARD_STAGES.indexOf(student.pipelineStage);
-  // True once a case has moved past what a counsellor can touch (admin took
-  // it further) — the stage Select becomes read-only rather than offering
-  // options that would just get rejected server-side.
-  const stageLocked = !isAdmin && student.pipelineStage !== 'Closed' && currentIndex > limitIndex;
-  const stageOptions = isAdmin ? [...FORWARD_STAGES, 'Closed'] : [...FORWARD_STAGES.slice(0, limitIndex + 1), 'Closed'];
-  const canSubmitForReview = !isAdmin && !stageLocked && student.pipelineStage !== 'Submitted for Review' && student.pipelineStage !== 'Closed';
-
   const handleSaveStage = async () => {
     setSaving(true);
     try {
@@ -103,20 +77,6 @@ export default function StudentDetailModal({ student, open, onOpenChange, onUpda
       toast({ title: 'Update failed', description: err.response?.data?.message, variant: 'destructive' });
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleSubmitForReview = async () => {
-    setSubmittingReview(true);
-    try {
-      const res = await api.updateStudent(student._id, { pipelineStage: 'Submitted for Review' });
-      setStage('Submitted for Review');
-      toast({ title: 'Submitted for admin review', description: 'An admin will take it from here.' });
-      onUpdated?.(res.data);
-    } catch (err) {
-      toast({ title: 'Could not submit', description: err.response?.data?.message, variant: 'destructive' });
-    } finally {
-      setSubmittingReview(false);
     }
   };
 
@@ -223,48 +183,20 @@ export default function StudentDetailModal({ student, open, onOpenChange, onUpda
               </div>
             )}
 
-            {student.pipelineStage === 'Submitted for Review' && isAdmin && (
-              <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-900">
-                <p className="font-medium">Ready for your review.</p>
-                <p className="mt-0.5 text-indigo-800">
-                  {student.submittedForReviewAt && <>Submitted {formatDate(student.submittedForReviewAt)}. </>}
-                  Once you're satisfied, create an Application for them from the{' '}
-                  <span className="font-medium">Applications</span> tab.
-                </p>
-              </div>
-            )}
-
             <div className="space-y-1.5">
               <Label>Pipeline Stage</Label>
-              {stageLocked ? (
-                <div className="rounded-md border bg-secondary/30 px-3 py-2 text-sm">
-                  <Badge variant="default">{student.pipelineStage}</Badge>
-                  <p className="mt-1.5 text-xs text-muted-foreground">
-                    This case has moved on to admin — you can still contact and message the student, but only an admin can change its stage from here.
-                  </p>
-                </div>
-              ) : (
-                <Select value={stage} onValueChange={setStage}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {stageOptions.map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {s}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              {student.submittedForReviewAt && !isAdmin && (
-                <p className="text-xs text-muted-foreground">Last submitted for review {formatDate(student.submittedForReviewAt)}.</p>
-              )}
-              {canSubmitForReview && (
-                <Button type="button" variant="outline" size="sm" onClick={handleSubmitForReview} disabled={submittingReview} className="w-full">
-                  {submittingReview ? 'Submitting...' : 'Submit for Admin Review →'}
-                </Button>
-              )}
+              <Select value={stage} onValueChange={setStage}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {STAGE_OPTIONS.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-1.5">
