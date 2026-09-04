@@ -1,0 +1,15 @@
+{
+  // Tells Cloudflare's deploy step to just upload the built static files
+  // from `dist/` as-is (a plain SPA), instead of trying to auto-detect a
+  // Vite plugin integration (which needs Vite 6+ — this project is on
+  // Vite 5). See client/package.json for the actual Vite version.
+  "name": "digitoba-psw-crm",
+  "compatibility_date": "2026-01-01",
+  "assets": {
+    "directory": "./dist",
+    // React Router client-side routes (e.g. /admin/students) have no
+    // matching file on disk — fall back to index.html so refreshing a
+    // deep link doesn't 404.
+    "not_found_handling": "single-page-application"
+  }
+}
