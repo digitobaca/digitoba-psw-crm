@@ -127,8 +127,8 @@ function recordDirect(student, idx, { amountCents, date, rcptRef }, ctx) {
   };
 }
 
-/** registrar/admin submits a BJO instalment as a ministry claim. */
-function submitClaim(student, idx, ctx) {
+/** registrar/admin submits a BJO instalment as a ministry claim. (params unused — kept for a uniform (student, idx, params, ctx) call shape across every transition) */
+function submitClaim(student, idx, params, ctx) {
   assertRole(ctx, ['registrar']);
   if (student.fundingType !== 'bjo') {
     throw new HttpError(409, 'Only Better Jobs Ontario students have claims to submit.');

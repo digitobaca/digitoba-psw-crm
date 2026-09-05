@@ -26,6 +26,7 @@ const analyticsRoutes = require('./routes/analytics');
 const portalRoutes = require('./routes/portal');
 const deletionRequestRoutes = require('./routes/deletionRequests');
 const adCampaignRoutes = require('./routes/adCampaigns');
+const feesRoutes = require('./src/modules/fees/routes');
 
 const app = express();
 
@@ -85,6 +86,7 @@ app.use('/api/attendance', attendanceRoutes);
 app.use('/api/portal', portalRoutes);
 app.use('/api/deletion-requests', deletionRequestRoutes);
 app.use('/api/ad-campaigns', adCampaignRoutes);
+app.use('/api/fees', feesRoutes);
 
 // --- Error handling (must be last) -------------------------------------------------
 app.use(notFound);

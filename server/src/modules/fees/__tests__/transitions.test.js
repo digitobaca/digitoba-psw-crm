@@ -132,14 +132,14 @@ describe('recordDirect', () => {
 describe('submitClaim', () => {
   it('moves a bjo instalment to funder status', () => {
     const s = student({ fundingType: 'bjo', instalments: [inst({ status: 'due', channel: 'funder' })] });
-    const event = submitClaim(s, 0, { role: 'registrar', now });
+    const event = submitClaim(s, 0, {}, { role: 'registrar', now });
     expect(s.instalments[0].status).toBe('funder');
     expect(event.tag).toBe('BJO');
   });
 
   it('409s a non-bjo student', () => {
     const s = student({ fundingType: 'intl' });
-    expect(() => submitClaim(s, 0, { role: 'registrar', now })).toThrow(/better jobs ontario/i);
+    expect(() => submitClaim(s, 0, {}, { role: 'registrar', now })).toThrow(/better jobs ontario/i);
   });
 });
 
