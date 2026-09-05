@@ -24,6 +24,10 @@ export const portalApi = axios.create({
 });
 
 export default api;
+// Exported (in addition to the default export) so the isolated Fee Ledger
+// feature module (client/src/features/fees/api.js) can reuse the same
+// configured axios instance/baseURL/credentials without duplicating it.
+export { api };
 
 // --- Public: lead capture ---------------------------------------------------------
 /**

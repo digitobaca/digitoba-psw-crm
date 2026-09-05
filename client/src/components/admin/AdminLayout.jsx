@@ -18,6 +18,11 @@ const NAV = [
   { to: '/admin/counsellors', label: 'Counsellors', roles: ['admin'] },
   { to: '/admin/ads', label: 'Ads Dashboard', roles: ['admin'] },
   { to: '/admin/analytics', label: 'Analytics', roles: ['admin'] },
+  // Fee Ledger module (client/src/features/fees/) — its own top-level route
+  // tree (/fees/*, see App.jsx) reusing this same shell. registrar/partner
+  // are new roles added for this module; they only see Fees here since none
+  // of the CRM pipeline items above apply to their job.
+  { to: '/fees', label: 'Fees', roles: ['admin', 'counsellor', 'registrar', 'partner'] },
 ];
 
 const UNREAD_POLL_MS = 15000;
@@ -35,6 +40,10 @@ const NEW_LEADS_POLL_MS = 20000;
 const ROLE_META = {
   admin: { label: 'Admin Console', barClass: 'bg-indigo-600', tileClass: 'bg-indigo-600', subtitleClass: 'text-indigo-600' },
   counsellor: { label: 'Counsellor Workspace', barClass: 'bg-primary', tileClass: 'bg-primary', subtitleClass: 'text-muted-foreground' },
+  // Fee Ledger module roles (server/models/User.js ROLES) — registrar is
+  // college finance/admissions staff, partner is a recruitment agency login.
+  registrar: { label: 'Registrar (Fees)', barClass: 'bg-emerald-700', tileClass: 'bg-emerald-700', subtitleClass: 'text-emerald-700' },
+  partner: { label: 'Partner Portal', barClass: 'bg-amber-600', tileClass: 'bg-amber-600', subtitleClass: 'text-amber-700' },
 };
 
 /**

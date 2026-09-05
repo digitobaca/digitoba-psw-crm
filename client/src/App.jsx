@@ -1,9 +1,14 @@
+import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Layout from '@/components/layout/Layout.jsx';
 import ProtectedRoute from '@/components/admin/ProtectedRoute.jsx';
 import AdminLayout from '@/components/admin/AdminLayout.jsx';
 import PortalProtectedRoute from '@/components/portal/PortalProtectedRoute.jsx';
 import PortalLayout from '@/components/portal/PortalLayout.jsx';
+
+// Fee Ledger module — isolated feature, lazy-loaded as its own chunk so it
+// doesn't grow the main bundle (see client/src/features/fees/).
+const FeesRoutes = lazy(() => import('@/features/fees/FeesRoutes.jsx'));
 
 import HomePage from '@/pages/HomePage.jsx';
 import AboutPage from '@/pages/AboutPage.jsx';
@@ -72,6 +77,25 @@ export default function App() {
         <Route path="counsellors" element={<ProtectedRoute roles={['admin']}><CounsellorsPage /></ProtectedRoute>} />
         <Route path="ads" element={<ProtectedRoute roles={['admin']}><AdsDashboardPage /></ProtectedRoute>} />
         <Route path="analytics" element={<ProtectedRoute roles={['admin']}><AnalyticsPage /></ProtectedRoute>} />
+      </Route>
+
+      {/* Fee Ledger module — its own top-level route group, same staff auth + AdminLayout shell as /admin/* */}
+      <Route
+        path="/fees/*"
+        element={
+          <ProtectedRoute roles={['admin', 'counsellor', 'registrar', 'partner']}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route
+          path="*"
+          element={
+            <Suspense fallback={<div className="py-16 text-center text-sm text-muted-foreground">Loading Fees...</div>}>
+              <FeesRoutes />
+            </Suspense>
+          }
+        />
       </Route>
 
       {/* Student self-service portal — separate auth, no public header/footer */}
