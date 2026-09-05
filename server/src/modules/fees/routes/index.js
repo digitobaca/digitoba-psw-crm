@@ -48,8 +48,11 @@ router.post('/programs', requireRegistrar, programCreateRules, validate, program
 router.put('/programs/:id', requireRegistrar, programUpdateRules, validate, programController.updateProgram);
 
 // --- Partners --------------------------------------------------------------------------
-router.get('/partners', partnerController.getPartners);
-router.get('/partners/:id', idParamRule, validate, partnerController.getPartnerById);
+// Per the API table (section 5): registrar/admin see all + commission summary, partner sees only
+// self. Counsellor's read-only access is scoped to their assigned students' ledgers, not the
+// partner roster/commission data, so counsellor is deliberately excluded here (unlike /students).
+router.get('/partners', authorize('admin', 'registrar', 'partner'), partnerController.getPartners);
+router.get('/partners/:id', authorize('admin', 'registrar', 'partner'), idParamRule, validate, partnerController.getPartnerById);
 router.post('/partners', requireRegistrar, partnerCreateRules, validate, partnerController.createPartner);
 router.put('/partners/:id', requireRegistrar, partnerUpdateRules, validate, partnerController.updatePartner);
 
@@ -65,7 +68,9 @@ router.post('/students/:id/instalments/:idx/record-direct', requireRegistrar, re
 router.post('/students/:id/instalments/:idx/submit-claim', requireRegistrar, instalmentParamRules, validate, studentController.submitClaim);
 
 // --- Remittance batches ------------------------------------------------------------------
-router.get('/batches', batchController.getBatches);
+// Per the API table: registrar sees all, partner sees own. Counsellor is read-only on student
+// ledgers only, not remittance batches — excluded here to match.
+router.get('/batches', authorize('admin', 'registrar', 'partner'), batchController.getBatches);
 router.post('/batches', authorize('admin', 'registrar', 'partner'), batchCreateRules, validate, batchController.createBatch);
 router.post('/batches/:ref/confirm', requireRegistrar, batchRefParamRules, validate, batchController.confirmBatch);
 
