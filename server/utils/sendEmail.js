@@ -24,6 +24,18 @@ const getTransporter = () => {
       // them so it doesn't matter how it was copy-pasted into the env var.
       pass: process.env.SMTP_PASS.replace(/\s+/g, ''),
     },
+    // Railway's container network has no working IPv6 egress to Gmail's SMTP
+    // servers — without this, Node's happy-eyeballs resolution tries the
+    // IPv6 address first, gets ENETUNREACH, and only falls back to IPv4
+    // after a real delay. Forcing IPv4 skips that entirely. (Confirmed live
+    // in production: ENETUNREACH on an IPv6 address, then ETIMEDOUT.)
+    family: 4,
+    // Fail fast instead of hanging the request for 60-100s+ if the network
+    // path breaks again — better a quick, visible failure than a request
+    // that just sits there looking frozen.
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 15000,
   });
 
   console.log(`[email] SMTP configured — sending as ${process.env.SMTP_USER} via ${process.env.SMTP_HOST}:${process.env.SMTP_PORT || 587}`);
