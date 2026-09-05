@@ -201,19 +201,31 @@ export default function StudentDetailModal({ student, open, onOpenChange, onUpda
 
             <div className="space-y-1.5">
               <Label>Assigned Counsellor</Label>
-              <Select value={assignedCounsellor || 'unassigned'} onValueChange={(v) => setAssignedCounsellor(v === 'unassigned' ? '' : v)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="unassigned">Unassigned</SelectItem>
-                  {counsellors.map((c) => (
-                    <SelectItem key={c._id} value={c._id}>
-                      {c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {isAdmin ? (
+                <Select value={assignedCounsellor || 'unassigned'} onValueChange={(v) => setAssignedCounsellor(v === 'unassigned' ? '' : v)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
+                    {counsellors.map((c) => (
+                      <SelectItem key={c._id} value={c._id}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                // Read-only for a counsellor — reassignment is an admin call.
+                // Changing your own case's assignment would immediately move
+                // it out of your own scoped view (scopeToCounsellor), which
+                // used to show up as the record "disappearing"/"deleting"
+                // itself; the server also ignores this field from a
+                // counsellor now regardless (belt and suspenders).
+                <div className="rounded-md border bg-secondary/30 px-3 py-2 text-sm text-gray-700">
+                  {student.assignedCounsellor?.name || 'Unassigned'}
+                </div>
+              )}
             </div>
 
             <DialogFooter className="gap-2 !mt-6">

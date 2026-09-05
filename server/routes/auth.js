@@ -17,8 +17,11 @@ router.post('/login', loginLimiter, loginRules, validate, login);
 router.post('/logout', protect, logoutRules, validate, logout);
 router.get('/me', protect, getMe);
 
-// Counsellor management (admin only)
-router.get('/counsellors', protect, authorize('admin'), getCounsellors);
+// Counsellor management. Listing is readable by any staff role — a
+// counsellor needs it to see who a case is currently assigned to (the
+// Student Detail modal's Assigned Counsellor field, shown to both roles).
+// Creating/editing accounts stays admin-only.
+router.get('/counsellors', protect, getCounsellors);
 router.post('/counsellors', protect, authorize('admin'), createCounsellor);
 router.put('/counsellors/:id', protect, authorize('admin'), idParamRule, validate, updateCounsellor);
 
