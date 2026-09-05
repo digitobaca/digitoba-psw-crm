@@ -30,16 +30,22 @@ const summaryController = require('../controllers/summaryController');
 const router = express.Router();
 
 /**
- * Every /api/fees/* route requires a valid staff (admin/counsellor/registrar/
- * partner) session — `protect` rejects an unauthenticated request or a
- * student-portal session outright (portal sessions carry a different
- * cookie/JWT and never populate req.user), satisfying "unreachable to
- * student portal sessions and unauthenticated requests" (acceptance
- * checklist). `feeScope` then builds the role-appropriate data filter/ctx
- * used by every controller below, and rejects any role not in
- * admin/registrar/partner/counsellor.
+ * Every /api/fees/* route requires a valid staff session — `protect`
+ * rejects an unauthenticated request or a student-portal session outright
+ * (portal sessions carry a different cookie/JWT and never populate
+ * req.user), satisfying "unreachable to student portal sessions and
+ * unauthenticated requests" (acceptance checklist).
+ *
+ * `authorize('admin')` is a deliberate, hard, module-wide gate on top of
+ * that: for now, this entire module is admin-only, full stop — no
+ * registrar/partner/counsellor account can reach any /api/fees/* route,
+ * regardless of what the finer-grained rules below (feeScope,
+ * requireRegistrar, per-route authorize lists) would otherwise allow. That
+ * finer-grained logic is left intact, unused, rather than ripped out — if
+ * this is ever opened up to those roles again, removing this one line
+ * restores it exactly as originally built and tested.
  */
-router.use(protect, feeScope);
+router.use(protect, authorize('admin'), feeScope);
 
 // --- Programs --------------------------------------------------------------------------
 router.get('/programs', programController.getPrograms);

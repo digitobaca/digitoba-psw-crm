@@ -15,7 +15,19 @@ or any existing model — the only existing files touched are `server/models/Use
 (new roles + `partnerId`), `server/server.js` (router registration), `client/src/App.jsx`
 (route registration), and `client/src/components/admin/AdminLayout.jsx` (sidebar entry).
 
-## Roles
+> **Current access policy: admin-only.** Both `/api/fees/*` (server) and
+> `/fees/*` (client route) are hard-gated to `role === 'admin'` — see
+> `router.use(protect, authorize('admin'), feeScope)` in
+> `server/src/modules/fees/routes/index.js` and the `roles={['admin']}`
+> `ProtectedRoute` around `/fees/*` in `client/src/App.jsx`. It's also
+> deliberately **not linked from the sidebar nav** (`AdminLayout.jsx`) — an
+> admin has to know the `/fees` URL. The `registrar`/`partner`/`counsellor`
+> role logic described below (`feeScope`, `requireRegistrar`, the per-route
+> `authorize()` lists) is still fully built and unit-tested, just currently
+> unreachable — removing the one `authorize('admin')` line restores it
+> exactly as originally built.
+
+## Roles (as originally designed — see the access-policy note above for what's actually enforced right now)
 
 | Role | Access |
 |---|---|
@@ -27,9 +39,7 @@ or any existing model — the only existing files touched are `server/models/Use
 
 All four staff roles log in through the same `/admin/login` and share the
 same `AdminLayout` shell as `admin`/`counsellor` — there is no separate login
-for registrar/partner accounts. `registrar` and `partner` only see the
-"Fees" item in the sidebar (the rest of the CRM nav is gated to
-`admin`/`counsellor`).
+for registrar/partner accounts.
 
 ## Statuses
 

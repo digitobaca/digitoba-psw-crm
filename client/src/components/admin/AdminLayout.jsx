@@ -18,11 +18,10 @@ const NAV = [
   { to: '/admin/counsellors', label: 'Counsellors', roles: ['admin'] },
   { to: '/admin/ads', label: 'Ads Dashboard', roles: ['admin'] },
   { to: '/admin/analytics', label: 'Analytics', roles: ['admin'] },
-  // Fee Ledger module (client/src/features/fees/) — its own top-level route
-  // tree (/fees/*, see App.jsx) reusing this same shell. registrar/partner
-  // are new roles added for this module; they only see Fees here since none
-  // of the CRM pipeline items above apply to their job.
-  { to: '/fees', label: 'Fees', roles: ['admin', 'counsellor', 'registrar', 'partner'] },
+  // Fee Ledger module (client/src/features/fees/) is deliberately NOT listed
+  // here — admin-only, and not linked from the main dashboard nav at all.
+  // It's still a real route (/fees, see App.jsx, itself gated to admin) —
+  // just not something anyone stumbles into by browsing the sidebar.
 ];
 
 const UNREAD_POLL_MS = 15000;

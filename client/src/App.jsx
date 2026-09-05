@@ -79,11 +79,15 @@ export default function App() {
         <Route path="analytics" element={<ProtectedRoute roles={['admin']}><AnalyticsPage /></ProtectedRoute>} />
       </Route>
 
-      {/* Fee Ledger module — its own top-level route group, same staff auth + AdminLayout shell as /admin/* */}
+      {/* Fee Ledger module — its own top-level route group, same staff auth + AdminLayout
+          shell as /admin/*. Admin-only for now (deliberately not opened to
+          counsellor/registrar/partner yet — mirrors the same hard gate on the API side,
+          server/src/modules/fees/routes/index.js) and not linked from the main nav
+          (AdminLayout.jsx) — reachable only by an admin who knows the URL. */}
       <Route
         path="/fees/*"
         element={
-          <ProtectedRoute roles={['admin', 'counsellor', 'registrar', 'partner']}>
+          <ProtectedRoute roles={['admin']}>
             <AdminLayout />
           </ProtectedRoute>
         }
