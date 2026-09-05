@@ -9,7 +9,9 @@
     "dev": "nodemon server.js",
     "seed:admin": "node seed/createAdmin.js",
     "seed:colleges": "node seed/seedColleges.js",
-    "migrate:pipeline-stages": "node seed/migratePipelineStages.js"
+    "migrate:pipeline-stages": "node seed/migratePipelineStages.js",
+    "seed:fees": "node src/modules/fees/seed/seedFees.js",
+    "test": "jest --testPathPatterns=src/modules/fees"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1123.0",
@@ -31,6 +33,7 @@
     "nodemailer": "^9.0.5"
   },
   "devDependencies": {
+    "jest": "^30.5.1",
     "nodemon": "^3.1.0"
   },
   "engines": {

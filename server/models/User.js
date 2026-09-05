@@ -3,7 +3,12 @@ const bcrypt = require('bcryptjs');
 
 // Internal team accounts: admin (full CRM + analytics access) and counsellor
 // (scoped to their assigned students only — enforced in middleware/scopeToCounsellor).
-const ROLES = ['admin', 'counsellor'];
+// 'registrar' and 'partner' were added for the Fee Ledger module
+// (server/src/modules/fees/) — registrar is college finance/admissions staff
+// (can confirm cash), partner is a recruitment agent scoped to their own
+// FeePartner's students via the partnerId field below. Both log in through
+// the same /admin/login track as admin/counsellor; there is no separate login.
+const ROLES = ['admin', 'counsellor', 'registrar', 'partner'];
 
 const UserSchema = new mongoose.Schema(
   {
@@ -45,6 +50,14 @@ const UserSchema = new mongoose.Schema(
     activeStudentCount: {
       type: Number,
       default: 0,
+    },
+    // Only meaningful when role === 'partner' — links this login to the
+    // FeePartner (recruitment agent) whose students/commission it can see.
+    // See server/src/modules/fees/models/FeePartner.js.
+    partnerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'FeePartner',
+      default: null,
     },
   },
   { timestamps: true }
