@@ -81,6 +81,35 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// TEMPORARY — diagnosing a production email-hang issue (SMTP connections
+// timing out/ENETUNREACH from this container). Tests raw TCP connectivity
+// to Gmail's SMTP ports from *inside* the actual deployed container, which
+// `railway run` (executes locally, not in-container) can't reveal. Gated
+// by a query-param token so it's not freely pingable. Remove once the
+// underlying network issue is confirmed/resolved — see git history.
+app.get('/api/_diag/net', async (req, res) => {
+  if (req.query.token !== 'diag-smtp-2026') return res.status(404).end();
+  const net = require('net');
+  const testPort = (port, timeoutMs = 8000) =>
+    new Promise((resolve) => {
+      const start = Date.now();
+      const socket = net.createConnection({ host: 'smtp.gmail.com', port, timeout: timeoutMs });
+      socket.once('connect', () => {
+        resolve({ port, ok: true, ms: Date.now() - start, remoteAddress: socket.remoteAddress });
+        socket.destroy();
+      });
+      socket.once('timeout', () => {
+        resolve({ port, ok: false, error: 'TIMEOUT', ms: Date.now() - start });
+        socket.destroy();
+      });
+      socket.once('error', (err) => {
+        resolve({ port, ok: false, error: err.code || err.message, ms: Date.now() - start });
+      });
+    });
+  const results = await Promise.all([testPort(587), testPort(465), testPort(25)]);
+  res.json({ results, nodeVersion: process.version });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/colleges', collegeRoutes);
