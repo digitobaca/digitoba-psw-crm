@@ -32,12 +32,13 @@ frontend, and Node.js/Express + MongoDB/Mongoose on the backend.
 - **Node.js 18+** and npm.
 - **MongoDB** — a local instance (e.g. MongoDB Community Server as a Windows
   service on `mongodb://127.0.0.1:27017`) or a MongoDB Atlas cluster.
-- (Optional) SMTP credentials for real emails — `server/.env` already has
-  `SMTP_USER=digitobaca@gmail.com` filled in; you just need to generate a
-  Gmail **App Password** (Google Account → Security → 2-Step Verification →
-  App Passwords) and paste it into `SMTP_PASS` in your local `.env`. Without
-  it, emails are logged to the server console instead of sent (fully
-  functional either way — nothing breaks if you skip this).
+- (Optional) A **SendGrid** API key for real emails — see `server/.env.example`
+  for the setup steps (sign up, verify a sender, create an API key), then
+  paste it into `SENDGRID_API_KEY` in your local `.env`. Without it, emails
+  are logged to the server console instead of sent (fully functional either
+  way — nothing breaks if you skip this). Email goes over SendGrid's HTTPS
+  API rather than raw SMTP because Railway (§12) blocks outbound SMTP
+  entirely at the platform level — confirmed live, not a credential issue.
 - (Not yet wired in — see §9) WhatsApp/SMS provider credentials, a payment
   gateway (Razorpay/Stripe).
 
@@ -447,9 +448,9 @@ CRUD across every entity, not yet fully polished on every screen):
   number, admission start date, and full admission details all live on the
   same `Application` record the admin edits directly from the Applications
   tab, with every stage change appended to `Application.history`.
-- Real Gmail SMTP wired for student-portal activation emails
-  (`digitobaca@gmail.com`) — see §1 to finish setup with your own App
-  Password.
+- Real email wired for student-portal activation and every lead
+  notification, via SendGrid's API (sending as `digitobaca@gmail.com`) —
+  see §1 to finish setup with your own API key.
 - Ads Dashboard (§7): Meta/Instagram/Google/SEO campaign tracking with
   UTM-based auto-attribution — leads through ROAS computed live from real
   CRM records, not a second manually-kept spreadsheet.

@@ -4,10 +4,12 @@ require('dotenv').config();
 // hostname but don't actually have a working IPv6 route to it — Node's
 // default DNS resolution tries IPv6 first, gets ENETUNREACH, and only
 // falls back to IPv4 after a real delay. This is the officially supported
-// fix (Node 17+): prefer IPv4 results globally. Affects every outbound
-// connection in the process — most concretely, SMTP (nodemailer has no
-// `family` option of its own to force this per-connection; verified by
-// reading its source — this global setting is what actually works).
+// fix (Node 17+): prefer IPv4 results globally, for every outbound
+// connection this process makes (MongoDB Atlas, Cloudflare R2, SendGrid's
+// API, etc.) — cheap insurance even now that email itself goes over
+// SendGrid's HTTPS API rather than raw SMTP (see utils/sendEmail.js),
+// since raw SMTP turned out to be blocked outbound on Railway entirely,
+// independent of this IPv6 issue.
 require('dns').setDefaultResultOrder('ipv4first');
 
 const path = require('path');

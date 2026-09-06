@@ -1,65 +1,52 @@
-const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 
-let transporter = null;
+// Switched from raw SMTP (nodemailer) to SendGrid's HTTPS API. Confirmed
+// live in production that Railway blocks all outbound SMTP entirely
+// (ports 587/465/25 all TIMEOUT connecting out of the container) — no
+// amount of credential/DNS tuning fixes that, since it's a platform-level
+// port block, not a routing or auth issue. SendGrid's API runs over HTTPS
+// (443), which is never blocked, and needs no raw socket connection at all.
+let configured = false;
 
-/** Lazily builds (and caches) the Nodemailer transporter from env vars. */
-const getTransporter = () => {
-  if (transporter) return transporter;
+/** Lazily configures the SendGrid client from env vars (once). */
+const getClient = () => {
+  if (configured) return sgMail;
 
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+  if (!process.env.SENDGRID_API_KEY) {
     console.warn(
-      '[email] SMTP not configured (SMTP_HOST/SMTP_USER/SMTP_PASS missing) — every email will be logged instead of sent. Set these in your host\'s environment variables (see server/.env.example).'
+      '[email] SENDGRID_API_KEY not set — every email will be logged instead of sent. Set it in your host\'s environment variables (see server/.env.example).'
     );
     return null; // email not configured
   }
 
-  transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: process.env.SMTP_SECURE === 'true',
-    auth: {
-      user: process.env.SMTP_USER,
-      // Gmail displays App Passwords with spaces for readability
-      // ("abcd efgh ijkl mnop") but the actual credential has none — strip
-      // them so it doesn't matter how it was copy-pasted into the env var.
-      pass: process.env.SMTP_PASS.replace(/\s+/g, ''),
-    },
-    // Note: nodemailer has no `family` option to force IPv4 per-connection
-    // (checked its source — it only forwards `localAddress`, not `family`,
-    // to net/tls.connect). The actual fix for Railway's broken IPv6 route
-    // to Gmail lives in server.js: dns.setDefaultResultOrder('ipv4first').
-    //
-    // Fail fast instead of hanging the request for 60-100s+ if the network
-    // path breaks again — better a quick, visible failure than a request
-    // that just sits there looking frozen.
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 15000,
-  });
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  configured = true;
+  console.log(`[email] SendGrid configured — sending as ${process.env.EMAIL_FROM || '(EMAIL_FROM not set)'}`);
 
-  console.log(`[email] SMTP configured — sending as ${process.env.SMTP_USER} via ${process.env.SMTP_HOST}:${process.env.SMTP_PORT || 587}`);
-
-  return transporter;
+  return sgMail;
 };
 
 /**
- * Sends an email. If SMTP is not configured (e.g. local dev without
- * credentials), it logs the message instead of throwing, so the rest of
- * the app keeps working.
+ * Sends an email. If SendGrid isn't configured (e.g. local dev without a
+ * key), it logs the message instead of throwing, so the rest of the app
+ * keeps working.
  */
 const sendEmail = async ({ to, subject, html, text }) => {
-  const t = getTransporter();
+  const client = getClient();
 
-  if (!t) {
-    console.log(`[email:skipped - SMTP not configured] To: ${to} | Subject: ${subject}`);
+  if (!client) {
+    console.log(`[email:skipped - SendGrid not configured] To: ${to} | Subject: ${subject}`);
     return { skipped: true };
   }
 
   let info;
   try {
-    info = await t.sendMail({
-      from: process.env.EMAIL_FROM || process.env.SMTP_USER,
+    // EMAIL_FROM must be a SendGrid-verified sender (Single Sender
+    // Verification, or a domain you've authenticated) — SendGrid rejects
+    // sends from an unverified address outright.
+    [info] = await client.send({
       to,
+      from: process.env.EMAIL_FROM || process.env.SENDGRID_FROM_EMAIL,
       subject,
       text,
       html,
@@ -67,10 +54,11 @@ const sendEmail = async ({ to, subject, html, text }) => {
   } catch (err) {
     // Callers only log err.message (so a slow/misconfigured mailer never
     // blocks the request) — log the fuller picture here so it's actually
-    // diagnosable from the host's logs. EAUTH = wrong user/app-password;
-    // ETIMEDOUT/ECONNECTION = host is blocking outbound SMTP (rare, but some
-    // free-tier platforms restrict it).
-    console.error(`[email:failed] To: ${to} | Subject: ${subject} | code: ${err.code || 'n/a'} | ${err.message}`);
+    // diagnosable from the host's logs. SendGrid's real error detail lives
+    // in err.response.body, not err.message, which is usually just
+    // "Bad Request" or similar.
+    const detail = err.response?.body?.errors?.map((e) => e.message).join('; ') || err.message;
+    console.error(`[email:failed] To: ${to} | Subject: ${subject} | status: ${err.code || 'n/a'} | ${detail}`);
     throw err;
   }
 
