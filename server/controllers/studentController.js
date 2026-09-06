@@ -101,13 +101,8 @@ const getStudentById = asyncHandler(async (req, res) => {
 });
 
 /**
- * @desc    Update a student's profile/pipeline stage. Per the CRM's intended
- *          workflow (book consultation → assign counsellor → contact →
- *          student fills profile → documents → submit for review → admin
- *          reviews and manages the Application through to admission), a
- *          counsellor can move a case up to "Submitted for Review" — moving
- *          it further is an admin action. Closed (lost) is exempt; a
- *          counsellor can always mark a dead lead closed.
+ * @desc    Update a student's profile/pipeline stage. Either role can set
+ *          pipelineStage to any value — see models/Student.js's pipeline.
  * @route   PUT /api/students/:id
  * @access  Private
  */
@@ -143,6 +138,18 @@ const updateStudent = asyncHandler(async (req, res) => {
   const updates = {};
   for (const field of allowedFields) {
     if (req.body[field] !== undefined) updates[field] = req.body[field];
+  }
+
+  // A counsellor is scoped to students where assignedCounsellor === themself
+  // (scopeToCounsellor). Letting a counsellor change that field on their own
+  // case means the very update that just succeeded immediately takes the
+  // record out of their own scope — it silently vanishes from their
+  // Students list (looks like "deleted"), and any update they attempt next
+  // 404s as "Student not found" since it's no longer theirs. Reassignment is
+  // an admin decision; a counsellor's own edits should never be able to
+  // trigger that side effect.
+  if (req.user.role === 'counsellor') {
+    delete updates.assignedCounsellor;
   }
 
   const existing = await Student.findOne({ _id: req.params.id, ...req.scopeFilter }).select('_id');

@@ -1,5 +1,17 @@
 require('dotenv').config();
 
+// Some hosts (confirmed on Railway) advertise an IPv6 address for a
+// hostname but don't actually have a working IPv6 route to it — Node's
+// default DNS resolution tries IPv6 first, gets ENETUNREACH, and only
+// falls back to IPv4 after a real delay. This is the officially supported
+// fix (Node 17+): prefer IPv4 results globally, for every outbound
+// connection this process makes (MongoDB Atlas, Cloudflare R2, SendGrid's
+// API, etc.) — cheap insurance even now that email itself goes over
+// SendGrid's HTTPS API rather than raw SMTP (see utils/sendEmail.js),
+// since raw SMTP turned out to be blocked outbound on Railway entirely,
+// independent of this IPv6 issue.
+require('dns').setDefaultResultOrder('ipv4first');
+
 const path = require('path');
 const express = require('express');
 const cors = require('cors');

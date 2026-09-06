@@ -18,6 +18,22 @@ const validate = (req, res, next) => {
 
 const idParamRule = [param('id').isMongoId().withMessage('Invalid id')];
 
+// express-validator's default normalizeEmail() is far more aggressive than
+// "just lowercase" — by default it strips dots and +tags from Gmail/Outlook/
+// Yahoo/iCloud addresses (itachi.7.alone@gmail.com becomes
+// itachi7alone@gmail.com), silently changing what the person actually typed.
+// Keep only case-insensitive lowercasing (matches the Student/User schemas'
+// own `lowercase: true` email fields) and disable every address-mangling
+// option — an email in the CRM should always match what was submitted.
+const EMAIL_NORMALIZE_OPTIONS = {
+  gmail_remove_dots: false,
+  gmail_remove_subaddress: false,
+  gmail_convert_googlemaildotcom: false,
+  outlookdotcom_remove_subaddress: false,
+  yahoo_remove_subaddress: false,
+  icloud_remove_subaddress: false,
+};
+
 const adCampaignRules = [
   body('name').trim().notEmpty().withMessage('Campaign name is required').isLength({ max: 150 }),
   body('channel').isIn(AdCampaign.CHANNELS).withMessage('Invalid channel'),
@@ -43,7 +59,7 @@ const adCampaignRules = [
 
 const deletionRequestRules = [
   body('name').trim().notEmpty().withMessage('Name is required').isLength({ max: 100 }),
-  body('email').trim().notEmpty().withMessage('Email is required').isEmail().withMessage('Invalid email address').normalizeEmail(),
+  body('email').trim().notEmpty().withMessage('Email is required').isEmail().withMessage('Invalid email address').normalizeEmail(EMAIL_NORMALIZE_OPTIONS),
   body('phone').optional({ checkFalsy: true }).trim().isLength({ max: 30 }),
   body('reason').optional({ checkFalsy: true }).trim().isLength({ max: 1000 }),
 ];
@@ -51,7 +67,7 @@ const deletionRequestRules = [
 // --- Students (public lead capture + CRM updates) ---------------------------------
 const studentCreateRules = [
   body('name').trim().notEmpty().withMessage('Name is required').isLength({ max: 100 }),
-  body('email').trim().notEmpty().withMessage('Email is required').isEmail().withMessage('Invalid email address').normalizeEmail(),
+  body('email').trim().notEmpty().withMessage('Email is required').isEmail().withMessage('Invalid email address').normalizeEmail(EMAIL_NORMALIZE_OPTIONS),
   body('phone').trim().notEmpty().withMessage('Phone number is required').isLength({ max: 30 }),
   // country/intendedProgram/immigrationStatus stay optional here even though
   // the Consultation form now requires them client-side — this single
@@ -78,7 +94,7 @@ const studentUpdateRules = [
   body('campaign').optional({ nullable: true }).isMongoId(),
   body('notes').optional({ checkFalsy: true }).trim().isLength({ max: 2000 }),
   body('name').optional().trim().isLength({ max: 100 }),
-  body('email').optional().trim().isEmail().normalizeEmail(),
+  body('email').optional().trim().isEmail().normalizeEmail(EMAIL_NORMALIZE_OPTIONS),
   body('phone').optional().trim().isLength({ max: 30 }),
   body('assignedCounsellor').optional({ nullable: true }).isMongoId(),
 ];
@@ -97,12 +113,12 @@ const noteRules = [
 
 // --- Auth ------------------------------------------------------------------------------
 const loginRules = [
-  body('email').trim().notEmpty().withMessage('Email is required').isEmail().withMessage('Invalid email address').normalizeEmail(),
+  body('email').trim().notEmpty().withMessage('Email is required').isEmail().withMessage('Invalid email address').normalizeEmail(EMAIL_NORMALIZE_OPTIONS),
   body('password').notEmpty().withMessage('Password is required'),
 ];
 
 const portalLoginRules = [
-  body('email').trim().notEmpty().withMessage('Email is required').isEmail().normalizeEmail(),
+  body('email').trim().notEmpty().withMessage('Email is required').isEmail().normalizeEmail(EMAIL_NORMALIZE_OPTIONS),
   body('password').notEmpty().withMessage('Password is required'),
 ];
 

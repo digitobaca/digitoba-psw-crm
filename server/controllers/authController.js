@@ -139,7 +139,13 @@ const activateStudentPortal = asyncHandler(async (req, res) => {
   student.portalActive = true;
   await student.save();
 
-  await sendEmail({
+  // Fire-and-forget, same as every other notification in the app
+  // (utils/onboardNewLead.js) — a slow/broken mailer should never hold up
+  // the actual activation. This used to `await` the send, which meant a
+  // flaky network path to SMTP (e.g. Railway's missing IPv6 route to
+  // Gmail, see sendEmail.js's `family: 4`) held this request open for
+  // 60-100+ seconds even though the activation itself succeeds instantly.
+  sendEmail({
     to: student.email,
     subject: 'Your CanadaDigitoba Student Portal is ready',
     text: `Hi ${student.name.split(' ')[0]},\n\nYour student portal is ready. Log in at ${process.env.CLIENT_URL}/portal/login with:\n\nEmail: ${student.email}\nTemporary password: ${tempPassword}\n\nPlease change your password after logging in.\n\n— CanadaDigitoba`,
