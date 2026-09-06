@@ -9,11 +9,11 @@
     "dev": "nodemon server.js",
     "seed:admin": "node seed/createAdmin.js",
     "seed:colleges": "node seed/seedColleges.js",
-    "migrate:pipeline-stages": "node seed/migratePipelineStages.js"
+    "migrate:pipeline-stages": "node seed/migratePipelineStages.js",
+    "auth:gmail": "node scripts/gmailAuth.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1123.0",
-    "@sendgrid/mail": "^8.1.6",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -24,6 +24,7 @@
     "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^7.2.0",
     "express-validator": "^7.0.1",
+    "googleapis": "^178.0.0",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.3.0",

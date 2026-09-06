@@ -1,64 +1,102 @@
-const sgMail = require('@sendgrid/mail');
+const { google } = require('googleapis');
 
-// Switched from raw SMTP (nodemailer) to SendGrid's HTTPS API. Confirmed
-// live in production that Railway blocks all outbound SMTP entirely
-// (ports 587/465/25 all TIMEOUT connecting out of the container) — no
-// amount of credential/DNS tuning fixes that, since it's a platform-level
-// port block, not a routing or auth issue. SendGrid's API runs over HTTPS
-// (443), which is never blocked, and needs no raw socket connection at all.
-let configured = false;
+// Sends through the Gmail API (HTTPS) as digitobaca@gmail.com — not SMTP,
+// not a third-party email service. Confirmed live in production that
+// Railway blocks all outbound SMTP entirely (ports 587/465/25 all TIMEOUT
+// connecting out of the container), so raw SMTP (any provider — Gmail,
+// SendGrid's SMTP relay, anything) is a dead end there regardless of
+// library. A third-party HTTP API (SendGrid, Resend, etc.) would also
+// work, but this keeps everything on the Gmail account already in use and
+// needs no new account/signup — just a one-time OAuth authorization
+// against the existing Google account (see scripts/gmailAuth.js).
+let gmailClient = null;
 
-/** Lazily configures the SendGrid client from env vars (once). */
-const getClient = () => {
-  if (configured) return sgMail;
+/** Lazily builds (and caches) an authorized Gmail API client from env vars. */
+const getGmailClient = () => {
+  if (gmailClient) return gmailClient;
 
-  if (!process.env.SENDGRID_API_KEY) {
+  const { GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN } = process.env;
+  if (!GMAIL_CLIENT_ID || !GMAIL_CLIENT_SECRET || !GMAIL_REFRESH_TOKEN) {
     console.warn(
-      '[email] SENDGRID_API_KEY not set — every email will be logged instead of sent. Set it in your host\'s environment variables (see server/.env.example).'
+      '[email] Gmail API not configured (GMAIL_CLIENT_ID/GMAIL_CLIENT_SECRET/GMAIL_REFRESH_TOKEN missing) — every email will be logged instead of sent. Run `node scripts/gmailAuth.js` once to set these up — see server/.env.example.'
     );
     return null; // email not configured
   }
 
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-  configured = true;
-  console.log(`[email] SendGrid configured — sending as ${process.env.EMAIL_FROM || '(EMAIL_FROM not set)'}`);
+  const oauth2Client = new google.auth.OAuth2(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET);
+  oauth2Client.setCredentials({ refresh_token: GMAIL_REFRESH_TOKEN });
+  gmailClient = google.gmail({ version: 'v1', auth: oauth2Client });
 
-  return sgMail;
+  console.log(`[email] Gmail API configured — sending as ${process.env.EMAIL_FROM || '(EMAIL_FROM not set)'}`);
+
+  return gmailClient;
+};
+
+/** Base64url-encodes a Buffer/string per the Gmail API's `raw` message format (standard base64, but URL-safe and unpadded). */
+const base64url = (input) => Buffer.from(input).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+/**
+ * Builds a raw RFC 2822 MIME message. Always multipart/alternative (a
+ * plain-text part + an HTML part) so the message renders sensibly however
+ * the recipient's client is set up — matches what every caller in this
+ * file already provides (both `text` and `html`).
+ */
+const buildRawMessage = ({ from, to, subject, text, html }) => {
+  const boundary = `cd_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  const lines = [
+    `From: ${from}`,
+    `To: ${to}`,
+    `Subject: =?UTF-8?B?${Buffer.from(subject || '').toString('base64')}?=`, // encoded so non-ASCII subjects survive
+    'MIME-Version: 1.0',
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/plain; charset="UTF-8"',
+    '',
+    text || '',
+    '',
+    `--${boundary}`,
+    'Content-Type: text/html; charset="UTF-8"',
+    '',
+    html || '',
+    '',
+    `--${boundary}--`,
+  ];
+  return lines.join('\r\n');
 };
 
 /**
- * Sends an email. If SendGrid isn't configured (e.g. local dev without a
- * key), it logs the message instead of throwing, so the rest of the app
- * keeps working.
+ * Sends an email. If the Gmail API isn't configured (e.g. local dev
+ * without OAuth credentials set up yet), it logs the message instead of
+ * throwing, so the rest of the app keeps working.
  */
 const sendEmail = async ({ to, subject, html, text }) => {
-  const client = getClient();
+  const client = getGmailClient();
 
   if (!client) {
-    console.log(`[email:skipped - SendGrid not configured] To: ${to} | Subject: ${subject}`);
+    console.log(`[email:skipped - Gmail API not configured] To: ${to} | Subject: ${subject}`);
     return { skipped: true };
   }
 
+  // The Gmail API always sends as the account that authorized the OAuth
+  // token (digitobaca@gmail.com) regardless of the From header's address —
+  // EMAIL_FROM only controls the display name Gmail shows, not who it's
+  // actually sent as.
+  const from = process.env.EMAIL_FROM || 'digitobaca@gmail.com';
+  const raw = base64url(buildRawMessage({ from, to, subject, text, html }));
+
   let info;
   try {
-    // EMAIL_FROM must be a SendGrid-verified sender (Single Sender
-    // Verification, or a domain you've authenticated) — SendGrid rejects
-    // sends from an unverified address outright.
-    [info] = await client.send({
-      to,
-      from: process.env.EMAIL_FROM || process.env.SENDGRID_FROM_EMAIL,
-      subject,
-      text,
-      html,
-    });
+    const res = await client.users.messages.send({ userId: 'me', requestBody: { raw } });
+    info = res.data;
   } catch (err) {
     // Callers only log err.message (so a slow/misconfigured mailer never
     // blocks the request) — log the fuller picture here so it's actually
-    // diagnosable from the host's logs. SendGrid's real error detail lives
-    // in err.response.body, not err.message, which is usually just
-    // "Bad Request" or similar.
-    const detail = err.response?.body?.errors?.map((e) => e.message).join('; ') || err.message;
-    console.error(`[email:failed] To: ${to} | Subject: ${subject} | status: ${err.code || 'n/a'} | ${detail}`);
+    // diagnosable from the host's logs. A 401/invalid_grant here almost
+    // always means the refresh token was revoked — re-run
+    // scripts/gmailAuth.js to get a fresh one.
+    const detail = err.response?.data?.error?.message || err.message;
+    console.error(`[email:failed] To: ${to} | Subject: ${subject} | status: ${err.code || err.response?.status || 'n/a'} | ${detail}`);
     throw err;
   }
 

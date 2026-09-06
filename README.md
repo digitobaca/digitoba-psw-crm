@@ -32,13 +32,15 @@ frontend, and Node.js/Express + MongoDB/Mongoose on the backend.
 - **Node.js 18+** and npm.
 - **MongoDB** — a local instance (e.g. MongoDB Community Server as a Windows
   service on `mongodb://127.0.0.1:27017`) or a MongoDB Atlas cluster.
-- (Optional) A **SendGrid** API key for real emails — see `server/.env.example`
-  for the setup steps (sign up, verify a sender, create an API key), then
-  paste it into `SENDGRID_API_KEY` in your local `.env`. Without it, emails
-  are logged to the server console instead of sent (fully functional either
-  way — nothing breaks if you skip this). Email goes over SendGrid's HTTPS
-  API rather than raw SMTP because Railway (§12) blocks outbound SMTP
-  entirely at the platform level — confirmed live, not a credential issue.
+- (Optional) **Gmail API** OAuth credentials for real emails — see
+  `server/.env.example` for the full one-time setup (a free Google Cloud
+  project, OAuth consent screen, OAuth client, then `npm run auth:gmail`
+  to authorize it), then set the three `GMAIL_*` values in your local
+  `.env`. Without them, emails are logged to the server console instead
+  of sent (fully functional either way — nothing breaks if you skip
+  this). Email goes over the Gmail API's HTTPS endpoint rather than raw
+  SMTP because Railway (§12) blocks outbound SMTP entirely at the
+  platform level — confirmed live, not a credential issue.
 - (Not yet wired in — see §9) WhatsApp/SMS provider credentials, a payment
   gateway (Razorpay/Stripe).
 
@@ -449,8 +451,8 @@ CRUD across every entity, not yet fully polished on every screen):
   same `Application` record the admin edits directly from the Applications
   tab, with every stage change appended to `Application.history`.
 - Real email wired for student-portal activation and every lead
-  notification, via SendGrid's API (sending as `digitobaca@gmail.com`) —
-  see §1 to finish setup with your own API key.
+  notification, via the Gmail API (sending as `digitobaca@gmail.com`) —
+  see §1 to finish the one-time OAuth setup.
 - Ads Dashboard (§7): Meta/Instagram/Google/SEO campaign tracking with
   UTM-based auto-attribution — leads through ROAS computed live from real
   CRM records, not a second manually-kept spreadsheet.
