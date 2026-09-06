@@ -21,7 +21,10 @@ export default function RefundsPage() {
     ]).finally(() => setLoading(false));
   };
 
-  useEffect(load, []);
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const eligible = students.filter((s) => s.sums.clearedCents > 0);
   const refundedStudentIds = new Set(refunds.map((r) => String(r.studentId?._id || r.studentId)));

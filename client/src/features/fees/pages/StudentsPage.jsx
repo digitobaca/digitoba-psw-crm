@@ -55,7 +55,9 @@ export default function StudentsPage() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(loadSummary, []);
+  useEffect(() => {
+    loadSummary();
+  }, []);
   useEffect(() => {
     const t = setTimeout(loadStudents, 250); // light debounce on search
     return () => clearTimeout(t);

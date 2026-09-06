@@ -38,7 +38,7 @@ function ActionQueue() {
       <CardHeader>
         <CardTitle className="text-base">Action queue</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="max-h-[360px] space-y-3 overflow-y-auto">
         {loading ? (
           <p className="text-sm text-muted-foreground">Loading...</p>
         ) : alerts.length === 0 ? (
@@ -112,10 +112,16 @@ function LedgerFeed() {
   );
 }
 
-/** Right rail shown on every fee page: action queue + shared ledger feed. */
+/**
+ * Right rail shown on every fee page: action queue + shared ledger feed.
+ * Sticky so it stays put while the (often much taller) main content
+ * scrolls, and each card scrolls internally on its own (see the max-h +
+ * overflow-y-auto on each CardContent above) rather than pushing the
+ * whole page taller as items pile up.
+ */
 export default function RightRail() {
   return (
-    <div className="space-y-6">
+    <div className="sticky top-6 space-y-6">
       <ActionQueue />
       <LedgerFeed />
     </div>
