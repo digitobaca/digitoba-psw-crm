@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input.jsx';
 import { Button } from '@/components/ui/button.jsx';
 import { useToast } from '@/components/ui/toast.jsx';
 import { submitLead } from '@/lib/api';
+import BrandLogo from '@/components/brand/BrandLogo.jsx';
 
 const FOOTER_LINKS = [
   {
@@ -85,11 +86,8 @@ export default function Footer() {
     <footer className="bg-gray-900 text-gray-300">
       <div className="container py-14 grid gap-10 md:grid-cols-4">
         <div>
-          <Link to="/" className="flex items-center gap-2 font-bold text-lg text-white">
-            <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground">CD</span>
-            <span>
-              Canada<span className="text-red-500">Digitoba</span>
-            </span>
+          <Link to="/" className="inline-flex rounded-2xl bg-white px-3 py-2 shadow-sm">
+            <BrandLogo size="lg" />
           </Link>
           <p className="mt-3 text-sm text-gray-400 max-w-xs">
             Your trusted partner for studying, working, and immigrating to Canada — with a dedicated pathway for
@@ -138,7 +136,7 @@ export default function Footer() {
 
       <div className="border-t border-white/10">
         <div className="container py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-500">
-          <p>&copy; {year} CanadaDigitoba. All rights reserved.</p>
+          <p>&copy; {year} CapitalImmigrationCanada. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <Link to="/delete-my-info" className="hover:text-white transition-colors">
               Delete My Info

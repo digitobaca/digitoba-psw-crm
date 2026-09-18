@@ -1,7 +1,7 @@
 {
   "name": "canadadigitoba-client",
   "version": "1.0.0",
-  "description": "Public marketing site + admin lead dashboard for CanadaDigitoba",
+  "description": "Public marketing site + admin lead dashboard for CapitalImmigrationCanada",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -14,7 +14,7 @@ export const TESTIMONIALS = [
     location: 'Mississauga, Ontario, Canada',
     program: 'PSW Pathway → PR',
     quote:
-      'PSW Canada guided me through the entire process — from course selection to immigration. Within 2 years I received my Permanent Residence.',
+      'CapitalImmigrationCanada guided me through the entire process — from course selection to immigration. Within 2 years I received my Permanent Residence.',
     rating: 5,
   },
   {

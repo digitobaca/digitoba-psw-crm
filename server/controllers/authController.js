@@ -147,8 +147,8 @@ const activateStudentPortal = asyncHandler(async (req, res) => {
   // 60-100+ seconds even though the activation itself succeeds instantly.
   sendEmail({
     to: student.email,
-    subject: 'Your CanadaDigitoba Student Portal is ready',
-    text: `Hi ${student.name.split(' ')[0]},\n\nYour student portal is ready. Log in at ${process.env.CLIENT_URL}/portal/login with:\n\nEmail: ${student.email}\nTemporary password: ${tempPassword}\n\nPlease change your password after logging in.\n\n— CanadaDigitoba`,
+    subject: 'Your CapitalImmigrationCanada Student Portal is ready',
+    text: `Hi ${student.name.split(' ')[0]},\n\nYour student portal is ready. Log in at ${process.env.CLIENT_URL}/portal/login with:\n\nEmail: ${student.email}\nTemporary password: ${tempPassword}\n\nPlease change your password after logging in.\n\n— CapitalImmigrationCanada`,
     html: `<p>Hi ${student.name.split(' ')[0]},</p><p>Your student portal is ready. Log in at <a href="${process.env.CLIENT_URL}/portal/login">${process.env.CLIENT_URL}/portal/login</a> with:</p><p><strong>Email:</strong> ${student.email}<br/><strong>Temporary password:</strong> ${tempPassword}</p><p>Please change your password after logging in.</p>`,
   }).catch((err) => console.error('Portal activation email failed:', err.message));
 

@@ -1,4 +1,4 @@
-# CanadaDigitoba
+# CapitalImmigrationCanada
 
 A study-abroad & immigration consultancy platform covering two verticals on
 one shared CRM pipeline:
@@ -100,7 +100,7 @@ Admin accounts aren't created via a public API (security) — use the CLI:
 
 ```bash
 cd server
-npm run seed:admin -- "Jane Doe" jane@canadadigitoba.com "StrongPassword123!"
+npm run seed:admin -- "Jane Doe" jane@capitalimmigrationcanada.com "StrongPassword123!"
 ```
 
 Counsellor accounts are created by an admin from the CRM UI

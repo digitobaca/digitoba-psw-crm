@@ -1,6 +1,6 @@
 # Fee Ledger module
 
-A self-contained feature of the CanadaDigitoba CRM that tracks college fees
+A self-contained feature of the CapitalImmigrationCanada CRM that tracks college fees
 per student as instalment ledgers, lets recruitment partners log money they
 collect, lets the registrar confirm cash, reconciles remittance batches,
 accrues partner commission, and calculates refunds under Ontario Regulation

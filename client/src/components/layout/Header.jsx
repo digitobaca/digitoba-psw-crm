@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { Menu } from '@/components/animate-ui/icons';
 import { Button } from '@/components/ui/button.jsx';
+import BrandLogo from '@/components/brand/BrandLogo.jsx';
 import { useConsultationModal } from '@/hooks/useConsultationModal';
 import { cn } from '@/lib/utils';
 
@@ -21,12 +22,9 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-white/90 backdrop-blur">
-      <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 font-bold text-lg" onClick={() => setOpen(false)}>
-          <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground">CD</span>
-          <span>
-            Canada<span className="text-primary">Digitoba</span>
-          </span>
+      <div className="container flex h-[5.5rem] items-center justify-between gap-4">
+        <Link to="/" className="flex shrink-0 items-center" onClick={() => setOpen(false)}>
+          <BrandLogo size={72} />
         </Link>
 
         <nav className="hidden lg:flex items-center gap-6">

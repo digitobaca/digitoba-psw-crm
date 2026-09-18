@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button.jsx';
 import { Badge } from '@/components/ui/badge.jsx';
 import ShiftEndDialog from '@/components/admin/ShiftEndDialog.jsx';
 import CanadaClock from '@/components/admin/CanadaClock.jsx';
+import BrandLogo from '@/components/brand/BrandLogo.jsx';
 import { useAuth } from '@/hooks/useAuth';
 import { cn, formatTime } from '@/lib/utils';
 import { useEffect, useState } from 'react';
@@ -144,14 +145,9 @@ export default function AdminLayout() {
       >
         <div className={cn('absolute inset-y-0 left-0 w-1', roleMeta.barClass)} aria-hidden="true" />
 
-        <div className="flex items-center gap-2.5 border-b px-5 py-5">
-          <span className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-white text-sm font-bold', roleMeta.tileClass)}>
-            CD
-          </span>
-          <div className="leading-tight">
-            <p className="font-bold text-sm text-gray-900">CanadaDigitoba CRM</p>
-            <p className={cn('text-[11px] font-semibold', roleMeta.subtitleClass)}>{roleMeta.label}</p>
-          </div>
+        <div className="flex flex-col items-center border-b px-4 py-4">
+          <BrandLogo size="md" />
+          <p className={cn('mt-1.5 text-[11px] font-semibold', roleMeta.subtitleClass)}>{roleMeta.label}</p>
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
@@ -218,7 +214,7 @@ export default function AdminLayout() {
           <Button variant="ghost" size="icon" onClick={() => setMobileOpen((v) => !v)} aria-label="Toggle navigation">
             <Menu size={20} animate={mobileOpen} />
           </Button>
-          <span className="font-bold text-sm text-gray-900">CanadaDigitoba CRM</span>
+          <BrandLogo size="xs" />
         </div>
 
         <main className="flex-1 px-4 py-6 sm:px-8 sm:py-8">

@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card.jsx';
 import { Badge } from '@/components/ui/badge.jsx';
 import { formatDate } from '@/lib/utils';
 import { BLOG_POSTS } from '@/data/blogPosts';
+import BrandLogo from '@/components/brand/BrandLogo.jsx';
 
 export default function BlogPreview() {
   const posts = BLOG_POSTS.slice(0, 3);
@@ -20,8 +21,8 @@ export default function BlogPreview() {
           {posts.map((post) => (
             <Link key={post.slug} to={`/blog/${post.slug}`} className="group">
               <Card className="h-full transition-shadow group-hover:shadow-md">
-                <div className="h-40 rounded-t-xl bg-gradient-to-br from-red-100 to-red-50 flex items-center justify-center">
-                  <span className="text-primary/50 font-bold text-4xl">CD</span>
+                <div className="flex h-40 items-center justify-center rounded-t-xl bg-gray-50">
+                  <BrandLogo size="lg" />
                 </div>
                 <CardContent className="pt-5">
                   <Badge variant="secondary">{post.category}</Badge>

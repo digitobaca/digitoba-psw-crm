@@ -1,4 +1,4 @@
-# CanadaDigitoba CRM — User Guide
+# CapitalImmigrationCanada CRM — User Guide
 
 A plain-language guide to using the CRM, for counsellors and admins. This
 covers what's actually built and working today — nothing here is a

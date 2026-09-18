@@ -4,8 +4,8 @@
  * the team's dashboard account is created here instead.
  *
  * Usage:
- *   node seed/createAdmin.js "Jane Doe" jane@canadadigitoba.com "StrongPassword123!"
- *   npm run seed:admin -- "Jane Doe" jane@canadadigitoba.com "StrongPassword123!"
+ *   node seed/createAdmin.js "Jane Doe" jane@capitalimmigrationcanada.com "StrongPassword123!"
+ *   npm run seed:admin -- "Jane Doe" jane@capitalimmigrationcanada.com "StrongPassword123!"
  */
 require('dotenv').config();
 const mongoose = require('mongoose');

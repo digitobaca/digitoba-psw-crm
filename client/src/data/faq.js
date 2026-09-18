@@ -2,7 +2,7 @@
 // previous PSW-focused site (canadapsw-pi.vercel.app).
 export const FAQ_ITEMS = [
   {
-    question: 'What services does CanadaDigitoba provide?',
+    question: 'What services does CapitalImmigrationCanada provide?',
     answer:
       'We provide end-to-end support for international students and skilled workers pursuing study, work, and immigration pathways to Canada — including eligibility assessment, college/university admissions, study permit applications, the Personal Support Worker (PSW) pathway, work permits, and permanent residency guidance.',
   },
@@ -42,7 +42,7 @@ export const FAQ_ITEMS = [
       'No consultancy can legally guarantee a visa outcome — approval decisions rest solely with Immigration, Refugees and Citizenship Canada (IRCC). What we guarantee is a complete, accurate, and well-prepared application, prepared with regulated partners, to maximize your chances of success.',
   },
   {
-    question: 'How much does it cost to work with CanadaDigitoba?',
+    question: 'How much does it cost to work with CapitalImmigrationCanada?',
     answer:
       'Your initial consultation is completely free. Program fees depend on the pathway you choose (study permit, PSW course + work permit, or PR pathway) and are laid out transparently before you commit to anything.',
   },

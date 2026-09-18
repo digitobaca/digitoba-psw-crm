@@ -109,7 +109,7 @@ const PORT = process.env.PORT || 5000;
 const start = async () => {
   await connectDB();
   app.listen(PORT, () => {
-    console.log(`CanadaDigitoba API running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+    console.log(`CapitalImmigrationCanada API running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
   });
 };
 
