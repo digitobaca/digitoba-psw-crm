@@ -1,4 +1,4 @@
-# CapitalImmigrationCanada
+# Capital Immigration Canada
 
 A study-abroad & immigration consultancy platform covering two verticals on
 one shared CRM pipeline:

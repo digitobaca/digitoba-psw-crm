@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input.jsx';
 import { Label } from '@/components/ui/label.jsx';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card.jsx';
 import { usePortalAuth } from '@/hooks/usePortalAuth';
-import BrandLogo from '@/components/brand/BrandLogo.jsx';
 
 export default function PortalLoginPage() {
   const { isAuthenticated, loading, signIn } = usePortalAuth();
@@ -35,7 +34,9 @@ export default function PortalLoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-secondary/40 px-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <BrandLogo size="xl" className="mx-auto" />
+          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-md bg-primary text-primary-foreground font-bold text-xs">
+            CIC
+          </div>
           <CardTitle className="mt-2">Student Portal</CardTitle>
           <CardDescription>Sign in with the credentials your counsellor emailed you</CardDescription>
         </CardHeader>

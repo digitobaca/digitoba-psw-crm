@@ -19,7 +19,7 @@ export default function AboutSection() {
             A Consultancy Built Around Real Outcomes
           </h2>
           <p className="mt-4 text-gray-600">
-            CapitalImmigrationCanada was founded to close the gap between ambitious international students and skilled workers,
+            Capital Immigration Canada was founded to close the gap between ambitious international students and skilled workers,
             and the complex, ever-changing world of Canadian immigration. Our mission is simple: give every client an
             honest assessment, a clear plan, and hands-on support until they're settled in Canada.
           </p>

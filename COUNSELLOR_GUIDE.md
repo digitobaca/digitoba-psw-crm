@@ -1,4 +1,4 @@
-# Counsellor's Guide to the CapitalImmigrationCanada CRM
+# Counsellor's Guide to the Capital Immigration Canada CRM
 
 Everything a counsellor actually does in this CRM, in the order you'd
 realistically do it. If something you see doesn't match this guide,

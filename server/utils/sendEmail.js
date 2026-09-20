@@ -109,19 +109,19 @@ const sendLeadAutoReply = (student) => {
 
   return sendEmail({
     to: student.email,
-    subject: 'Successfully submitted — we are contacting you | CapitalImmigrationCanada',
-    text: `Hi ${firstName},\n\nYour request has been successfully submitted. We are contacting you — one of our licensed immigration consultants will reach out within 1-2 business days to discuss your Canadian study options.\n\nIn the meantime, if you have any urgent questions, just reply to this email.\n\nWarm regards,\nThe CapitalImmigrationCanada Team`,
+    subject: 'Successfully submitted — we are contacting you | Capital Immigration Canada',
+    text: `Hi ${firstName},\n\nYour request has been successfully submitted. We are contacting you — one of our licensed immigration consultants will reach out within 1-2 business days to discuss your Canadian study options.\n\nIn the meantime, if you have any urgent questions, just reply to this email.\n\nWarm regards,\nThe Capital Immigration Canada Team`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #1f2937;">
         <h2 style="color: #b91c1c;">Successfully submitted, ${firstName}!</h2>
-        <p>We are contacting you — a licensed immigration consultant from <strong>CapitalImmigrationCanada</strong> will reach out within <strong>1-2 business days</strong> to discuss your Canadian study options.</p>
+        <p>We are contacting you — a licensed immigration consultant from <strong>Capital Immigration Canada</strong> will reach out within <strong>1-2 business days</strong> to discuss your Canadian study options.</p>
         <p>Here's a quick summary of what you submitted:</p>
         <table style="width:100%; border-collapse: collapse; margin: 16px 0;">
           <tr><td style="padding:6px 0; color:#6b7280;">Program of interest</td><td style="padding:6px 0;"><strong>${student.intendedProgram || 'General Inquiry'}</strong></td></tr>
           <tr><td style="padding:6px 0; color:#6b7280;">Country</td><td style="padding:6px 0;">${student.country || '-'}</td></tr>
         </table>
         <p>If anything is urgent, just reply directly to this email.</p>
-        <p style="margin-top:24px;">Warm regards,<br/>The CapitalImmigrationCanada Team</p>
+        <p style="margin-top:24px;">Warm regards,<br/>The Capital Immigration Canada Team</p>
       </div>
     `,
   });

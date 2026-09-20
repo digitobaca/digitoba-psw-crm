@@ -37,7 +37,7 @@ const onboardNewLead = async (student) => {
   sendTeamNotification(student).catch((err) => console.error('Team notification email failed:', err.message)); // admin/team inbox
   sendWhatsApp({
     student,
-    message: `Hi ${student.name.split(' ')[0]}, thanks for reaching out to CapitalImmigrationCanada! A counsellor will contact you within 1-2 business days.`,
+    message: `Hi ${student.name.split(' ')[0]}, thanks for reaching out to Capital Immigration Canada! A counsellor will contact you within 1-2 business days.`,
   }).catch((err) => console.error('WhatsApp acknowledgement failed:', err.message));
 
   // Individual alert to the counsellor this lead was just assigned to, on

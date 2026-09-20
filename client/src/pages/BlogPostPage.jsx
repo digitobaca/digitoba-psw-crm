@@ -3,7 +3,6 @@ import { Badge } from '@/components/ui/badge.jsx';
 import { formatDate } from '@/lib/utils';
 import { BLOG_POSTS } from '@/data/blogPosts';
 import CTASection from '@/components/home/CTASection.jsx';
-import BrandLogo from '@/components/brand/BrandLogo.jsx';
 import { ArrowLeft } from 'lucide-react';
 
 export default function BlogPostPage() {
@@ -26,8 +25,8 @@ export default function BlogPostPage() {
             {formatDate(post.date)} &middot; {post.readMinutes} min read
           </p>
 
-          <div className="mt-8 flex h-56 items-center justify-center rounded-xl bg-gray-50">
-            <BrandLogo size="xl" />
+          <div className="mt-8 flex h-56 items-center justify-center rounded-xl bg-gradient-to-br from-red-100 to-red-50">
+            <span className="text-primary/50 font-bold text-5xl">CIC</span>
           </div>
 
           <div className="mt-8 prose prose-gray max-w-none text-gray-700 whitespace-pre-line leading-relaxed">

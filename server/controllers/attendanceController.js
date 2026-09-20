@@ -67,7 +67,7 @@ const exportAttendance = asyncHandler(async (req, res) => {
   const records = await Attendance.find(filter).populate('user', 'name email role').sort([['user', 1], ['shiftStart', -1]]);
 
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = 'CapitalImmigrationCanada CRM';
+  workbook.creator = 'Capital Immigration Canada CRM';
   workbook.created = new Date();
   const sheet = workbook.addWorksheet('Attendance');
 

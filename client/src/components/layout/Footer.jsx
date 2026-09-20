@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input.jsx';
 import { Button } from '@/components/ui/button.jsx';
 import { useToast } from '@/components/ui/toast.jsx';
 import { submitLead } from '@/lib/api';
-import BrandLogo from '@/components/brand/BrandLogo.jsx';
+import { PHONE_DISPLAY, PHONE_TEL } from '@/lib/constants';
 
 const FOOTER_LINKS = [
   {
@@ -86,8 +86,11 @@ export default function Footer() {
     <footer className="bg-gray-900 text-gray-300">
       <div className="container py-14 grid gap-10 md:grid-cols-4">
         <div>
-          <Link to="/" className="inline-flex rounded-2xl bg-white px-3 py-2 shadow-sm">
-            <BrandLogo size="lg" />
+          <Link to="/" className="flex items-center gap-2 font-bold text-lg text-white">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs">CIC</span>
+            <span>
+              Capital Immigration <span className="text-red-500">Canada</span>
+            </span>
           </Link>
           <p className="mt-3 text-sm text-gray-400 max-w-xs">
             Your trusted partner for studying, working, and immigrating to Canada — with a dedicated pathway for
@@ -123,7 +126,8 @@ export default function Footer() {
               <Mail className="h-4 w-4 shrink-0" /> admissions@canadadigitoba.com
             </li>
             <li className="flex items-center gap-2">
-              <PhoneCall size={16} className="shrink-0" animateOnView animateOnViewOnce /> +1 (204) 000-0000
+              <PhoneCall size={16} className="shrink-0" animateOnView animateOnViewOnce />
+              <a href={`tel:${PHONE_TEL}`} className="hover:text-white">{PHONE_DISPLAY}</a>
             </li>
             <li className="flex items-center gap-2">
               <MapPin size={16} className="shrink-0" animateOnView animateOnViewOnce delay={150} /> Winnipeg, Manitoba, Canada
@@ -136,7 +140,7 @@ export default function Footer() {
 
       <div className="border-t border-white/10">
         <div className="container py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-500">
-          <p>&copy; {year} CapitalImmigrationCanada. All rights reserved.</p>
+          <p>&copy; {year} Capital Immigration Canada. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <Link to="/delete-my-info" className="hover:text-white transition-colors">
               Delete My Info

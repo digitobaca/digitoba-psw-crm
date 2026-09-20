@@ -2,6 +2,7 @@ import { Mail } from 'lucide-react';
 import { PhoneCall, MapPin } from '@/components/animate-ui/icons';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.jsx';
 import ConsultationForm from '@/components/forms/ConsultationForm.jsx';
+import { PHONE_DISPLAY, PHONE_TEL } from '@/lib/constants';
 
 export default function ContactPage() {
   return (
@@ -33,7 +34,9 @@ export default function ContactPage() {
                   <PhoneCall size={20} className="text-primary" animateOnView animateOnViewOnce /> Phone / WhatsApp
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-gray-600">+1 (204) 000-0000</CardContent>
+              <CardContent className="text-sm text-gray-600">
+                <a href={`tel:${PHONE_TEL}`} className="hover:text-primary">{PHONE_DISPLAY}</a>
+              </CardContent>
             </Card>
             <Card>
               <CardHeader>

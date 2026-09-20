@@ -13,7 +13,7 @@ export default function AboutPage() {
     <>
       <section className="bg-secondary/40 py-16 text-center">
         <div className="container">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900">About CapitalImmigrationCanada</h1>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900">About Capital Immigration Canada</h1>
           <p className="mt-4 max-w-2xl mx-auto text-gray-600">
             We're a student recruitment and immigration consultancy dedicated to helping ambitious people study, work,
             and settle in Canada — with deep expertise in the Personal Support Worker pathway.
@@ -53,7 +53,7 @@ export default function AboutPage() {
           </div>
           <div className="rounded-2xl bg-white border p-8">
             <p className="text-gray-700 leading-relaxed">
-              CapitalImmigrationCanada was founded on a simple observation: too many talented, qualified people were being let
+              Capital Immigration Canada was founded on a simple observation: too many talented, qualified people were being let
               down by unclear advice and unreliable agents. We built a consultancy that treats every client's journey
               to Canada as our own — grounded in real regulatory expertise, and focused on outcomes that actually
               change lives...

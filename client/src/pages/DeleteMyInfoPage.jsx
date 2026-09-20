@@ -46,7 +46,7 @@ export default function DeleteMyInfoPage() {
         <div className="container">
           <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900">Delete My Info</h1>
           <p className="mt-4 max-w-2xl mx-auto text-gray-600">
-            Request that CapitalImmigrationCanada delete the personal information we hold about you.
+            Request that Capital Immigration Canada delete the personal information we hold about you.
           </p>
         </div>
       </section>

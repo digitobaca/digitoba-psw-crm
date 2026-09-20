@@ -1,7 +1,7 @@
 {
   "name": "canadadigitoba-server",
   "version": "1.0.0",
-  "description": "Backend API for CapitalImmigrationCanada - student recruitment, PSW immigration & study-in-Canada CRM platform",
+  "description": "Backend API for Capital Immigration Canada - student recruitment, PSW immigration & study-in-Canada CRM platform",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {

@@ -1,4 +1,4 @@
-# CapitalImmigrationCanada CRM — User Guide
+# Capital Immigration Canada CRM — User Guide
 
 A plain-language guide to using the CRM, for counsellors and admins. This
 covers what's actually built and working today — nothing here is a

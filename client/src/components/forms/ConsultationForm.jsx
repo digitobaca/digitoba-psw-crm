@@ -110,7 +110,7 @@ export default function ConsultationForm({ defaults = {}, onSuccess, compact = f
   if (submitted) {
     const whatsappHref = WHATSAPP_NUMBER
       ? `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-          `Hi CapitalImmigrationCanada, I'm ${leadName || 'a new lead'} — I just submitted a consultation request and wanted to reach out directly.`
+          `Hi Capital Immigration Canada, I'm ${leadName || 'a new lead'} — I just submitted a consultation request and wanted to reach out directly.`
         )}`
       : null;
 
@@ -213,7 +213,7 @@ export default function ConsultationForm({ defaults = {}, onSuccess, compact = f
         {!submitting && <Send size={16} animate={submitHover} />}
       </Button>
       <p className="text-xs text-muted-foreground text-center">
-        By submitting, you agree to be contacted by CapitalImmigrationCanada about your inquiry. We never share your data with third parties.
+        By submitting, you agree to be contacted by Capital Immigration Canada about your inquiry. We never share your data with third parties.
       </p>
     </form>
   );

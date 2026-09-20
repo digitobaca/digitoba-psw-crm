@@ -4,7 +4,6 @@ import { LayoutDashboard, UserCircle2, FileText, ClipboardList, CreditCard, Mess
 import { LogOut, Menu } from '@/components/animate-ui/icons';
 import { Button } from '@/components/ui/button.jsx';
 import { usePortalAuth } from '@/hooks/usePortalAuth';
-import BrandLogo from '@/components/brand/BrandLogo.jsx';
 import { cn } from '@/lib/utils';
 
 const NAV = [
@@ -40,9 +39,14 @@ export default function PortalLayout() {
       >
         <div className="absolute inset-y-0 left-0 w-1 bg-primary" aria-hidden="true" />
 
-        <div className="flex flex-col items-center border-b px-4 py-4">
-          <BrandLogo size="md" />
-          <p className="mt-1.5 text-[11px] font-semibold text-muted-foreground">Student Portal</p>
+        <div className="flex items-center gap-2.5 border-b px-5 py-5">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-bold">
+            CIC
+          </span>
+          <div className="leading-tight min-w-0">
+            <p className="font-bold text-xs text-gray-900">Capital Immigration Canada</p>
+            <p className="text-[11px] font-semibold text-muted-foreground">Student Portal</p>
+          </div>
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
